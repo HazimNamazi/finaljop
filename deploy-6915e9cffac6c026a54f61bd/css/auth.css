@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: linear-gradient(135deg, #f5f7ff, #cfe2ff);
+  color: #222;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  background: #fff;
+  padding: 35px;
+  border-radius: 14px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1);
+  width: 360px;
+  text-align: center;
+  animation: fadeIn 0.6s ease;
+}
+
+h2 {
+  color: #007bff;
+  font-weight: 700;
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+
+p.subtitle {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #f9f9f9;
+  font-size: 15px;
+  transition: all 0.3s;
+}
+
+input:focus {
+  border-color: #007bff;
+  background: #fff;
+  outline: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.03);
+  background: linear-gradient(135deg, #0056b3, #004494);
+}
+
+p {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #555;
+}
+
+a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.alert {
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  display: none;
+  font-size: 14px;
+}
+
+.alert.show {
+  display: block;
+}
+
+.alert-success {
+  background: rgba(0, 255, 100, 0.15);
+  color: #2e8b57;
+  border: 1px solid #2e8b57;
+}
+
+.alert-error {
+  background: rgba(255, 0, 0, 0.1);
+  color: #d63384;
+  border: 1px solid #d63384;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}

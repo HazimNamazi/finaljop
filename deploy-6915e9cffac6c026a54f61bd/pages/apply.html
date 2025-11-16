@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>التقديم على الوظيفة</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Tajawal', sans-serif;
+    }
+
+    .apply-container {
+      background: #fff;
+      max-width: 700px;
+      margin: 50px auto;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #0f3460;
+      margin-bottom: 25px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, textarea {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      font-size: 15px;
+      width: 100%;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    button {
+      background-color: #3a86ff;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #265baf;
+    }
+
+    .success, .error {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+
+  <div class="apply-container">
+    <h1>📝 التقديم على الوظيفة</h1>
+
+    <form id="applyForm">
+      <input type="hidden" id="job_id">
+      
+      <label for="full_name">الاسم الكامل</label>
+      <input type="text" id="full_name" required>
+
+      <label for="email">البريد الإلكتروني</label>
+      <input type="email" id="email" required>
+
+      <label for="phone">رقم الجوال</label>
+      <input type="text" id="phone">
+
+      <label for="resume_url">رابط السيرة الذاتية (Drive أو LinkedIn)</label>
+      <input type="url" id="resume_url">
+
+      <label for="cover_letter">رسالة التغطية (اختياري)</label>
+      <textarea id="cover_letter"></textarea>
+
+      <button type="submit">📨 إرسال الطلب</button>
+      <div id="responseMessage"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('applyForm');
+    const responseMsg = document.getElementById('responseMessage');
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById('job_id').value = params.get('job_id');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      responseMsg.textContent = '⏳ جاري إرسال الطلب...';
+
+      const data = {
+        job_id: document.getElementById('job_id').value,
+        full_name: document.getElementById('full_name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        resume_url: document.getElementById('resume_url').value,
+        cover_letter: document.getElementById('cover_letter').value
+      };
+
+      try {
+        const res = await fetch('/.netlify/functions/apply-job', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          responseMsg.innerHTML = `<p class='success'>✅ تم إرسال الطلب بنجاح!</p>`;
+          form.reset();
+        } else {
+          responseMsg.innerHTML = `<p class='error'>❌ ${result.error}</p>`;
+        }
+      } catch (err) {
+        responseMsg.innerHTML = `<p class='error'>⚠️ حدث خطأ أثناء الإرسال.</p>`;
+      }
+    });
+  </script>
+
+</body>
+</html>
