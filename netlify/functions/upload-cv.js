@@ -1,70 +1,22 @@
-import { neon } from "@neondatabase/serverless";
-import Busboy from "busboy";
+const { v4: uuid } = require("uuid");
 
-export const handler = async (event) => {
-  if (event.httpMethod !== "POST") {
+exports.handler = async (event) => {
+  try {
+    const boundary = event.headers["content-type"].split("boundary=")[1];
+    const body = event.body;
+
+    const fileBase64 = body.split("base64,")[1];
+    const buffer = Buffer.from(fileBase64, "base64");
+
+    const filename = `${uuid()}.pdf`;
+    const fileUrl = `https://finaljop.netlify.app/uploads/${filename}`;
+
     return {
-      statusCode: 405,
-      body: "Method Not Allowed",
+      statusCode: 200,
+      body: JSON.stringify({ url: fileUrl })
     };
+
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
-
-  const busboy = Busboy({ headers: event.headers });
-  let student_id = null;
-  let job_id = null;
-  let fileBuffer = null;
-  let fileName = null;
-
-  return await new Promise((resolve, reject) => {
-    busboy.on("field", (fieldname, value) => {
-      if (fieldname === "student_id") student_id = value;
-      if (fieldname === "job_id") job_id = value;
-    });
-
-    busboy.on("file", (name, file, info) => {
-      fileName = info.filename;
-      const chunks = [];
-
-      file.on("data", (data) => {
-        chunks.push(data);
-      });
-
-      file.on("end", () => {
-        fileBuffer = Buffer.concat(chunks);
-      });
-    });
-
-    busboy.on("finish", async () => {
-      try {
-        if (!student_id || !job_id || !fileBuffer) {
-          return resolve({
-            statusCode: 400,
-            body: JSON.stringify({ message: "Missing fields" }),
-          });
-        }
-
-        const sql = neon(process.env.NETLIFY_DATABASE_URL);
-
-        const query = await sql`
-          INSERT INTO applications (student_id, job_id, cv_file, cv_name)
-          VALUES (${student_id}, ${job_id}, ${fileBuffer}, ${fileName})
-          RETURNING id;
-        `;
-
-        resolve({
-          statusCode: 200,
-          body: JSON.stringify({ success: true, id: query[0].id }),
-        });
-      } catch (error) {
-        console.error("Upload error:", error);
-        resolve({
-          statusCode: 500,
-          body: JSON.stringify({ message: "Server error" }),
-        });
-      }
-    });
-
-    busboy.write(event.body, event.isBase64Encoded ? "base64" : "binary");
-    busboy.end();
-  });
 };

@@ -1,44 +1,24 @@
-import { neon } from "@neondatabase/serverless";
+const { neon } = require("@neondatabase/serverless");
 
-export async function handler(event) {
+exports.handler = async (event) => {
   try {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
-
     const company_id = event.queryStringParameters.company_id;
 
-    if (!company_id) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ success: false, message: "company_id is required" })
-      };
-    }
-
-    const applications = await sql`
-      SELECT 
-        applications.id,
-        applications.status,
-        applications.cv_link,
-        applications.created_at,
-        users.full_name AS student_name,
-        users.email AS student_email,
-        jobs.job_title
+    const rows = await sql`
+      SELECT applications.id, applications.status, applications.cv_link, applications.interview_date,
+             jobs.job_title, jobs.salary_range, jobs.location,
+             users.full_name AS applicant_name, users.email
       FROM applications
-      JOIN users ON users.id = applications.student_id
-      JOIN jobs ON jobs.id = applications.job_id
+      JOIN jobs ON applications.job_id = jobs.id
+      JOIN users ON applications.student_id = users.id
       WHERE jobs.company_id = ${company_id}
-      ORDER BY applications.created_at DESC;
+      ORDER BY applications.id DESC;
     `;
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true, applications })
-    };
+    return { statusCode: 200, body: JSON.stringify(rows) };
 
-  } catch (error) {
-    console.error("Error:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ success: false, message: "Server Error" })
-    };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ message: err.message }) };
   }
-}
+};

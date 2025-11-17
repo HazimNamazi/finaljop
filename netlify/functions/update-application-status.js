@@ -1,40 +1,19 @@
-import { neon } from "@neondatabase/serverless";
+const { neon } = require("@neondatabase/serverless");
 
-export async function handler(event) {
+exports.handler = async (event) => {
   try {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
-
-    const { application_id, status } = JSON.parse(event.body || "{}");
-
-    if (!application_id || !status) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          success: false,
-          message: "application_id and status are required"
-        })
-      };
-    }
+    const body = JSON.parse(event.body);
 
     await sql`
-      UPDATE applications
-      SET status = ${status}
-      WHERE id = ${application_id};
+      UPDATE applications 
+      SET status=${body.status}, interview_date=${body.interview_date || null}
+      WHERE id=${body.id};
     `;
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        success: true,
-        message: "Status updated successfully"
-      })
-    };
+    return { statusCode: 200, body: JSON.stringify({ success: true }) };
 
-  } catch (error) {
-    console.error("ERROR:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ success: false, message: "Server Error" })
-    };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ success:false, message: err.message }) };
   }
-}
+};

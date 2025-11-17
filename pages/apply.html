@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📄 التقديم على الوظيفة</title>
-
+  <title>التقديم على الوظيفة</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -27,14 +26,14 @@
 
     h2 { margin-bottom: 15px; color: #007bff; }
 
-    input[type="file"] {
+    input {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
       margin-bottom: 20px;
       font-size: 16px;
-      background: #fff;
+      background: #f8f8f8;
     }
 
     button {
@@ -63,7 +62,7 @@
 
 <div class="container">
   <h2>📄 التقديم على الوظيفة</h2>
-  <p>قم برفع السيرة الذاتية (PDF):</p>
+  <p>قم برفع السيرة الذاتية (PDF)</p>
 
   <input type="file" id="cvFile" accept="application/pdf">
 
@@ -73,44 +72,28 @@
 </div>
 
 <script>
-  // ================================
-  // 🔐 التحقق من تسجيل الدخول
-  // ================================
-  let user = null;
+  // ====== تحقق من تسجيل دخول الطالب ======
+  let user = JSON.parse(localStorage.getItem("user"));
 
-  if (localStorage.getItem("user")) {
-    user = JSON.parse(localStorage.getItem("user"));
-  }
-
-  if (!user || !user.id) {
-    alert("⚠️ يجب تسجيل الدخول كطالب للتقديم.");
-    window.location.href = "login.html";
-  }
-
-  if (user.user_type !== "student") {
+  if (!user || (user.user_type !== "student" && user.user_type !== "job_seeker")) {
     alert("⚠️ فقط الطلاب يمكنهم التقديم على الوظائف.");
     window.location.href = "login.html";
   }
 
-  // ================================
-  // 📌 الحصول على معرف الوظيفة
-  // ================================
-  const urlParams = new URLSearchParams(window.location.search);
-  const jobId = urlParams.get("jobId");
+  // === الحصول على jobId ===
+  const jobId = new URLSearchParams(window.location.search).get("jobId");
 
   if (!jobId) {
     document.getElementById("statusMessage").innerHTML =
-      "<span style='color:red;'>❌ خطأ: لا يوجد وظيفة محددة!</span>";
+      "<span style='color:red;'>❌ لا يوجد وظيفة محددة!</span>";
   }
 
-  // ================================
-  // 🚀 رفع السيرة الذاتية وإرسال الطلب
-  // ================================
+  // ====== رفع الملف + إرسال الطلب ======
   async function submitApplication() {
     const fileInput = document.getElementById("cvFile");
     const statusMsg = document.getElementById("statusMessage");
 
-    if (fileInput.files.length === 0) {
+    if (!fileInput.files.length) {
       statusMsg.style.color = "red";
       statusMsg.innerText = "⚠️ يرجى اختيار ملف PDF.";
       return;
@@ -118,34 +101,51 @@
 
     const file = fileInput.files[0];
 
-    const formData = new FormData();
-    formData.append("student_id", user.id);
-    formData.append("job_id", jobId);
-    formData.append("file", file);
-
-    statusMsg.style.color = "black";
-    statusMsg.innerText = "⏳ جاري إرسال الطلب...";
-
     try {
-      const res = await fetch("/.netlify/functions/upload-cv", {
+      // 1️⃣ رفع CV
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const uploadRes = await fetch("/.netlify/functions/upload-cv", {
         method: "POST",
         body: formData
       });
 
-      const data = await res.json();
+      const uploadData = await uploadRes.json();
+
+      if (!uploadData.url) {
+        statusMsg.style.color = "red";
+        statusMsg.innerText = "❌ فشل رفع الملف.";
+        return;
+      }
+
+      const cvLink = uploadData.url;
+
+      // 2️⃣ تسجيل التقديم
+      const applyRes = await fetch("/.netlify/functions/apply-job", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          job_id: jobId,
+          student_id: user.id,
+          cv_link: cvLink
+        })
+      });
+
+      const data = await applyRes.json();
 
       if (data.success) {
         statusMsg.style.color = "green";
         statusMsg.innerText = "✔️ تم إرسال طلبك بنجاح!";
       } else {
         statusMsg.style.color = "red";
-        statusMsg.innerText = "❌ فشل إرسال الطلب.";
+        statusMsg.innerText = "❌ حدث خطأ أثناء الإرسال.";
       }
 
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       statusMsg.style.color = "red";
-      statusMsg.innerText = "❌ خطأ في الاتصال بالخادم.";
+      statusMsg.innerText = "❌ فشل الاتصال بالخادم.";
     }
   }
 </script>
