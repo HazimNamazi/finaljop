@@ -24,7 +24,11 @@
       text-align: center;
     }
 
-    h2 { margin-bottom: 15px; color: #007bff; }
+    h2 {
+      margin-bottom: 15px;
+      color: #007bff;
+      font-weight: 700;
+    }
 
     input {
       width: 100%;
@@ -48,7 +52,9 @@
       transition: 0.3s;
     }
 
-    button:hover { background: #005ecb; }
+    button:hover {
+      background: #005ecb;
+    }
 
     #statusMessage {
       margin-top: 15px;
@@ -72,21 +78,24 @@
 
 <script>
   // ================================
-  // 🔐 التحقق من تسجيل الدخول — النسخة الصحيحة 100%
+  // 🔐 التحقق من تسجيل الدخول — الصحيح 100%
   // ================================
+
   let user = null;
 
-  // جلب المستخدم من أي مسار محتمل
+  // جلب المستخدم من localStorage
   if (localStorage.getItem("user")) {
     user = JSON.parse(localStorage.getItem("user"));
   }
 
+  // إذا لم يتم تسجيل الدخول
   if (!user || !user.id) {
     alert("⚠️ يجب تسجيل الدخول كطالب للتقديم على الوظائف.");
     window.location.href = "login.html";
   }
 
-  if (user.user_type !== "student") {
+  // التحقق من نوع المستخدم (الطالب = job_seeker)
+  if (user.user_type !== "job_seeker") {
     alert("⚠️ فقط الطلاب يمكنهم التقديم على الوظائف.");
     window.location.href = "login.html";
   }
@@ -103,7 +112,7 @@
   }
 
   // ================================
-  // 🚀 إرسال التقديم
+  // 🚀 إرسال طلب التقديم
   // ================================
   async function submitApplication() {
     const cvLink = document.getElementById("cvLink").value.trim();
@@ -130,7 +139,8 @@
 
       if (data.success) {
         statusMsg.style.color = "green";
-        statusMsg.innerText = "✔️ تم إرسال طلبك بنجاح! سيتم إشعارك بالقبول أو الرفض.";
+        statusMsg.innerText =
+          "✔️ تم إرسال طلبك بنجاح! سيتم إشعارك بالقبول أو الرفض.";
       } else {
         statusMsg.style.color = "red";
         statusMsg.innerText = "❌ حدث خطأ أثناء إرسال الطلب.";
