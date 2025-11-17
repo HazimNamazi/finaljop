@@ -1,213 +1,191 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🏢 لوحة تحكم الشركات</title>
+  <meta charset="UTF-8">
+  <title>📬 الطلبات المقدمة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #eef1f5;
+      font-family: 'Tajawal';
+      margin: 0; padding: 20px;
+      text-align: center;
+    }
 
-<style>
-  body {
-    font-family: 'Tajawal', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: #fff;
-    margin: 0;
-    min-height: 100vh;
-    padding: 40px 10px;
-    display: flex;
-    justify-content: center;
-  }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
 
-  .dashboard {
-    background: rgba(255,255,255,0.08);
-    padding: 30px;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 900px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-  }
+    h2 { color:#007bff; }
 
-  h1,h2 { text-align: center; }
-  h2 { margin-top: 40px; }
+    .card {
+      background:#fff;
+      padding:20px;
+      border-radius:10px;
+      margin-bottom:15px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      text-align:right;
+    }
 
-  .btn {
-    background: #007bff;
-    padding: 10px 20px;
-    color: white;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-  }
+    .status {
+      font-weight:bold;
+      margin-top:10px;
+    }
 
-  input, textarea {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 10px;
-    border: none;
-    background: rgba(255,255,255,0.15);
-    color: white;
-  }
+    button {
+      padding: 10px 16px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:15px;
+      margin-left:7px;
+      transition:0.3s;
+    }
 
-  .card {
-    background: rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 12px;
-    margin: 10px 0;
-  }
+    .btn-accept { background:#28a745; color:white; }
+    .btn-reject { background:#dc3545; color:white; }
+    .btn-interview { background:#007bff; color:white; }
 
-  button.small-btn {
-    padding: 6px 12px;
-    margin: 5px;
-    border-radius: 8px;
-    cursor: pointer;
-    border: none;
-  }
+    button:hover { transform:scale(1.05); }
 
-  .accept { background: #28a745; }
-  .reject { background: #dc3545; }
-  .schedule { background: #ffbf00; }
-</style>
+    .modal {
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.5);
+      justify-content:center;
+      align-items:center;
+    }
+
+    .modal-content {
+      background:white;
+      padding:25px;
+      border-radius:12px;
+      width:350px;
+      text-align:center;
+    }
+
+    input[type="datetime-local"] {
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      margin-bottom:15px;
+      border:1px solid #ccc;
+    }
+
+  </style>
 </head>
 
 <body>
 
-<div class="dashboard">
-  <h1>🏢 لوحة تحكم الشركات</h1>
-  <h2 id="welcome"></h2>
+<div class="container">
+  <h2>📬 الطلبات المقدمة</h2>
+  <div id="applicationsList"></div>
+</div>
 
-  <button class="btn" onclick="toggleForm()">➕ إضافة وظيفة</button>
+<!-- 📅 نافذة تحديد موعد المقابلة -->
+<div class="modal" id="interviewModal">
+  <div class="modal-content">
+    <h3>🕓 تحديد موعد المقابلة</h3>
 
-  <div id="jobForm" style="display:none;">
-    <h2>إضافة وظيفة جديدة</h2>
-    <input type="text" id="title" placeholder="المسمى الوظيفي">
-    <textarea id="desc" placeholder="الوصف الوظيفي"></textarea>
-    <input type="text" id="location" placeholder="الموقع">
-    <input type="text" id="salary" placeholder="الراتب">
-
-    <button class="btn" onclick="addJob()">نشر الوظيفة</button>
+    <input type="datetime-local" id="interviewDate">
+    <button class="btn-interview" id="saveInterviewBtn">💾 حفظ الموعد</button>
+    <button onclick="closeModal()">إلغاء</button>
   </div>
-
-  <h2>📋 الوظائف المنشورة</h2>
-  <div id="jobsList"></div>
-
-  <h2>📨 الطلبات المقدمة</h2>
-  <div id="appsList"></div>
 </div>
 
 <script>
+  let selectedApplication = null;
+
   const user = JSON.parse(localStorage.getItem("user"));
-
   if (!user || user.user_type !== "company") {
-    alert("يجب تسجيل الدخول كشركة.");
-    window.location.href = "login.html";
+    alert("⚠️ يجب تسجيل الدخول كشركة.");
+    location.href = "login.html";
   }
 
-  document.getElementById("welcome").innerText = "مرحباً، " + user.full_name;
-
-  function toggleForm() {
-    const form = document.getElementById("jobForm");
-    form.style.display = (form.style.display === "none") ? "block" : "none";
-  }
-
-  // ============================
-  //  نشر وظيفة
-  // ============================
-  async function addJob() {
-    const job_title = document.getElementById("title").value;
-    const job_description = document.getElementById("desc").value;
-    const location = document.getElementById("location").value;
-    const salary = document.getElementById("salary").value;
-
-    const res = await fetch("/.netlify/functions/add-job", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        company_id: user.id,
-        company_name: user.full_name,
-        job_title,
-        job_description,
-        location,
-        salary_range: salary,
-        job_type: "Full-time"
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert("تم نشر الوظيفة!");
-      loadJobs();
-    } else alert("خطأ: " + data.message);
-  }
-
-  // ============================
-  //  تحميل وظائف الشركة
-  // ============================
-  async function loadJobs() {
-    const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
-    const jobs = await res.json();
-
-    document.getElementById("jobsList").innerHTML = jobs.map(j => `
-      <div class="card">
-        <h3>${j.job_title}</h3>
-        <p>${j.job_description}</p>
-        <p>📍 ${j.location} — 💰 ${j.salary_range}</p>
-      </div>
-    `).join("");
-  }
-
-  // ============================
-  //  تحميل الطلبات المقدمة
-  // ============================
-  async function loadApps() {
+  // تحميل الطلبات
+  async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
 
-    document.getElementById("appsList").innerHTML = apps.map(a => `
-      <div class="card">
-        <h3>${a.applicant_name}</h3>
-        <p>الوظيفة: ${a.job_title}</p>
-        <a href="${a.cv_link}" target="_blank">📄 عرض السيرة الذاتية</a>
-        <p>الحالة الحالية: <b>${a.status}</b></p>
-        <button class="small-btn accept" onclick="updateStatus(${a.id}, 'مقبول')">قبول</button>
-        <button class="small-btn reject" onclick="updateStatus(${a.id}, 'مرفوض')">رفض</button>
-        <button class="small-btn schedule" onclick="scheduleInterview(${a.id})">📅 مقابلة</button>
-      </div>
-    `).join("");
+    const list = document.getElementById("applicationsList");
+    list.innerHTML = "";
+
+    if (!apps.length) {
+      list.innerHTML = "<p>لا توجد طلبات حالياً.</p>";
+      return;
+    }
+
+    apps.forEach(app => {
+      list.innerHTML += `
+        <div class="card">
+          <div><strong>${app.applicant_name}</strong> قدم على وظيفة: ${app.job_title}</div>
+          <div>📧 ${app.email}</div>
+          <div class="status">الحالة: ${app.status}</div>
+          ${app.cv_link ? `<a href="${app.cv_link}" target="_blank">📄 عرض السيرة الذاتية</a>` : ""}
+          <br><br>
+          <button class="btn-accept" onclick="updateStatus(${app.id}, 'مقبول')">قبول</button>
+          <button class="btn-reject" onclick="updateStatus(${app.id}, 'مرفوض')">رفض</button>
+          <button class="btn-interview" onclick="openModal(${app.id})">📅 مقابلة</button>
+        </div>
+      `;
+    });
   }
 
+  // تحديث الحالة (قبول / رفض)
   async function updateStatus(id, status) {
     await fetch("/.netlify/functions/update-application-status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status })
     });
-    loadApps();
+
+    alert("✔ تم تحديث الحالة");
+    loadApplications();
   }
 
-  async function scheduleInterview(id) {
-    const date = prompt("🕓 أدخل موعد المقابلة (مثال: 2025-01-20 4PM):");
-    if (!date) return;
+  // فتح نافذة تحديد المقابلة
+  function openModal(id) {
+    selectedApplication = id;
+    document.getElementById("interviewModal").style.display = "flex";
+  }
+
+  // إغلاق النافذة
+  function closeModal() {
+    document.getElementById("interviewModal").style.display = "none";
+  }
+
+  // حفظ موعد المقابلة
+  document.getElementById("saveInterviewBtn").addEventListener("click", async () => {
+    const date = document.getElementById("interviewDate").value;
+
+    if (!date) {
+      alert("⚠ يرجى اختيار موعد");
+      return;
+    }
 
     await fetch("/.netlify/functions/update-application-status", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        id,
+        id: selectedApplication,
         status: "مقابلة",
         interview_date: date
       })
     });
 
-    alert("📅 تم تحديد موعد المقابلة!");
-    loadApps();
-  }
+    closeModal();
+    alert("✔ تم تحديد موعد المقابلة");
+    loadApplications();
+  });
 
-  loadJobs();
-  loadApps();
+  loadApplications();
 </script>
 
 </body>
