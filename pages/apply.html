@@ -26,6 +26,15 @@
 
     h2 { margin-bottom: 15px; color: #007bff; }
 
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
     button {
       background: #007bff;
       color: white;
@@ -41,11 +50,6 @@
 
     button:hover { background: #005ecb; }
 
-    input[type="file"] {
-      margin: 20px 0;
-      font-size: 16px;
-    }
-
     #statusMessage {
       margin-top: 15px;
       font-weight: 600;
@@ -57,77 +61,83 @@
 
 <div class="container">
   <h2>📄 التقديم على الوظيفة</h2>
-  <p>قم برفع ملف السيرة الذاتية (PDF فقط)</p>
+  <p>ارفع ملف السيرة الذاتية (PDF):</p>
 
   <input type="file" id="cvFile" accept="application/pdf">
 
-  <button onclick="submitApplication()">إرسال التقديم</button>
+  <button onclick="uploadCV()">إرسال التقديم</button>
 
   <p id="statusMessage"></p>
 </div>
 
 <script>
-  // التحقق من تسجيل الدخول
-  let user = JSON.parse(localStorage.getItem("user") || "{}");
+  // ================================
+  // 🔐 التحقق من تسجيل الدخول
+  // ================================
+  let user = null;
 
-  if (!user.id || user.user_type !== "student") {
+  try {
+    user = JSON.parse(localStorage.getItem("user"));
+  } catch {}
+
+  if (!user) {
     alert("⚠️ يجب تسجيل الدخول كطالب للتقديم.");
     window.location.href = "login.html";
   }
 
-  // الحصول على jobId
+  if (user.user_type !== "student") {
+    alert("⚠️ فقط الطلاب يمكنهم التقديم.");
+    window.location.href = "login.html";
+  }
+
+  // ================================
+  // 📌 الحصول على معرف الوظيفة
+  // ================================
   const jobId = new URLSearchParams(window.location.search).get("jobId");
 
-  async function submitApplication() {
+  if (!jobId) {
+    document.getElementById("statusMessage").innerHTML =
+      "<span style='color:red;'>❌ لا يوجد وظيفة محددة.</span>";
+  }
+
+  // ================================
+  // 🚀 رفع ملف CV
+  // ================================
+  async function uploadCV() {
     const fileInput = document.getElementById("cvFile");
     const statusMsg = document.getElementById("statusMessage");
 
     if (!fileInput.files.length) {
       statusMsg.style.color = "red";
-      statusMsg.textContent = "⚠️ يجب رفع ملف PDF.";
+      statusMsg.innerText = "⚠️ يرجى رفع ملف PDF.";
       return;
     }
 
-    const file = fileInput.files[0];
-
-    // رفع الملف إلى Netlify Function
     const formData = new FormData();
-    formData.append("cv", file);
+    formData.append("cv", fileInput.files[0]);
+    formData.append("job_id", jobId);
+    formData.append("student_id", user.id);
 
-    const uploadRes = await fetch("/.netlify/functions/upload-cv", {
-      method: "POST",
-      body: formData
-    });
+    try {
+      const res = await fetch("/.netlify/functions/upload-cv", {
+        method: "POST",
+        body: formData
+      });
 
-    const uploadData = await uploadRes.json();
+      const data = await res.json();
 
-    if (!uploadData.success) {
+      if (data.success) {
+        statusMsg.style.color = "green";
+        statusMsg.innerText = "✔️ تم رفع السيرة الذاتية بنجاح!";
+      } else {
+        statusMsg.style.color = "red";
+        statusMsg.innerText = "❌ فشل رفع السيرة الذاتية.";
+      }
+
+    } catch (error) {
+      console.error(error);
       statusMsg.style.color = "red";
-      statusMsg.textContent = "❌ فشل رفع السيرة الذاتية.";
-      return;
-    }
-
-    const cvLink = uploadData.url;
-
-    // حفظ التقديم
-    const res = await fetch("/.netlify/functions/apply-job", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        job_id: jobId,
-        student_id: user.id,
-        cv_link: cvLink
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      statusMsg.style.color = "green";
-      statusMsg.textContent = "✔️ تم إرسال طلبك بنجاح!";
-    } else {
-      statusMsg.style.color = "red";
-      statusMsg.textContent = "❌ حدث خطأ أثناء إرسال الطلب.";
+      statusMsg.innerText = "❌ فشل الاتصال بالخادم.";
     }
   }
 </script>
