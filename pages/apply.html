@@ -24,20 +24,7 @@
       text-align: center;
     }
 
-    h2 {
-      margin-bottom: 15px;
-      color: #007bff;
-      font-weight: 700;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 20px;
-      font-size: 16px;
-    }
+    h2 { margin-bottom: 15px; color: #007bff; }
 
     button {
       background: #007bff;
@@ -52,8 +39,11 @@
       transition: 0.3s;
     }
 
-    button:hover {
-      background: #005ecb;
+    button:hover { background: #005ecb; }
+
+    input[type="file"] {
+      margin: 20px 0;
+      font-size: 16px;
     }
 
     #statusMessage {
@@ -67,9 +57,9 @@
 
 <div class="container">
   <h2>📄 التقديم على الوظيفة</h2>
-  <p>أدخل رابط السيرة الذاتية (CV):</p>
+  <p>قم برفع ملف السيرة الذاتية (PDF فقط)</p>
 
-  <input type="text" id="cvLink" placeholder="أدخل رابط الـ CV هنا...">
+  <input type="file" id="cvFile" accept="application/pdf">
 
   <button onclick="submitApplication()">إرسال التقديم</button>
 
@@ -77,79 +67,67 @@
 </div>
 
 <script>
-  // ================================
-  // 🔐 التحقق من تسجيل الدخول — الصحيح 100%
-  // ================================
+  // التحقق من تسجيل الدخول
+  let user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  let user = null;
-
-  // جلب المستخدم من localStorage
-  if (localStorage.getItem("user")) {
-    user = JSON.parse(localStorage.getItem("user"));
-  }
-
-  // إذا لم يتم تسجيل الدخول
-  if (!user || !user.id) {
-    alert("⚠️ يجب تسجيل الدخول كطالب للتقديم على الوظائف.");
+  if (!user.id || user.user_type !== "student") {
+    alert("⚠️ يجب تسجيل الدخول كطالب للتقديم.");
     window.location.href = "login.html";
   }
 
-  // التحقق من نوع المستخدم (الطالب = job_seeker)
-  if (user.user_type !== "job_seeker") {
-    alert("⚠️ فقط الطلاب يمكنهم التقديم على الوظائف.");
-    window.location.href = "login.html";
-  }
+  // الحصول على jobId
+  const jobId = new URLSearchParams(window.location.search).get("jobId");
 
-  // ================================
-  // 📌 الحصول على معرف الوظيفة
-  // ================================
-  const urlParams = new URLSearchParams(window.location.search);
-  const jobId = urlParams.get("jobId");
-
-  if (!jobId) {
-    document.getElementById("statusMessage").innerHTML =
-      "<span style='color:red;'>❌ خطأ: لا يوجد وظيفه محددة!</span>";
-  }
-
-  // ================================
-  // 🚀 إرسال طلب التقديم
-  // ================================
   async function submitApplication() {
-    const cvLink = document.getElementById("cvLink").value.trim();
+    const fileInput = document.getElementById("cvFile");
     const statusMsg = document.getElementById("statusMessage");
 
-    if (!cvLink) {
+    if (!fileInput.files.length) {
       statusMsg.style.color = "red";
-      statusMsg.innerText = "⚠️ يرجى إدخال رابط الـ CV.";
+      statusMsg.textContent = "⚠️ يجب رفع ملف PDF.";
       return;
     }
 
-    try {
-      const res = await fetch("/.netlify/functions/apply-job", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          job_id: jobId,
-          student_id: user.id,
-          cv_link: cvLink
-        })
-      });
+    const file = fileInput.files[0];
 
-      const data = await res.json();
+    // رفع الملف إلى Netlify Function
+    const formData = new FormData();
+    formData.append("cv", file);
 
-      if (data.success) {
-        statusMsg.style.color = "green";
-        statusMsg.innerText =
-          "✔️ تم إرسال طلبك بنجاح! سيتم إشعارك بالقبول أو الرفض.";
-      } else {
-        statusMsg.style.color = "red";
-        statusMsg.innerText = "❌ حدث خطأ أثناء إرسال الطلب.";
-      }
+    const uploadRes = await fetch("/.netlify/functions/upload-cv", {
+      method: "POST",
+      body: formData
+    });
 
-    } catch (error) {
-      console.error(error);
+    const uploadData = await uploadRes.json();
+
+    if (!uploadData.success) {
       statusMsg.style.color = "red";
-      statusMsg.innerText = "❌ فشل الاتصال بالخادم.";
+      statusMsg.textContent = "❌ فشل رفع السيرة الذاتية.";
+      return;
+    }
+
+    const cvLink = uploadData.url;
+
+    // حفظ التقديم
+    const res = await fetch("/.netlify/functions/apply-job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id: jobId,
+        student_id: user.id,
+        cv_link: cvLink
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      statusMsg.style.color = "green";
+      statusMsg.textContent = "✔️ تم إرسال طلبك بنجاح!";
+    } else {
+      statusMsg.style.color = "red";
+      statusMsg.textContent = "❌ حدث خطأ أثناء إرسال الطلب.";
     }
   }
 </script>
