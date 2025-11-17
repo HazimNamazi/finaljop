@@ -1,0 +1,14 @@
+{
+  "name": "career-portal",
+  "version": "1.0.0",
+  "description": "منصة احترافية للتوظيف",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0",
+    "bcryptjs": "^3.0.3"
+  }
+}

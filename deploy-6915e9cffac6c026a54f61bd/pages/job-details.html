@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل الوظيفة - بوابة الوظائف</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Tajawal', sans-serif;
+    }
+
+    .job-details {
+      background: #fff;
+      padding: 40px;
+      margin: 40px auto;
+      border-radius: 10px;
+      max-width: 900px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .job-header {
+      border-bottom: 2px solid #eee;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .job-header h1 {
+      font-size: 26px;
+      color: #0f3460;
+      margin-bottom: 5px;
+    }
+
+    .job-header p {
+      color: #3a86ff;
+      font-weight: 500;
+    }
+
+    .job-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .meta-item {
+      background: #eef2ff;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .job-description {
+      line-height: 1.8;
+      color: #444;
+      margin-bottom: 25px;
+    }
+
+    .job-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .tag {
+      background-color: #e9ecef;
+      color: #0f3460;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .apply-btn {
+      display: inline-block;
+      background: #3a86ff;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .apply-btn:hover {
+      background: #265baf;
+    }
+
+    /* نموذج التقديم */
+    #applyForm {
+      background: #eef2ff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    #applyForm input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #applyForm button {
+      background: #3a86ff;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">
+        <i class="fas fa-briefcase"></i>
+        <span>بوابة الوظائف</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="../index.html">الرئيسية</a></li>
+        <li><a href="jobs.html">الوظائف</a></li>
+        <li><a href="companies.html">الشركات</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="job-details">
+    <div id="job-content">
+      <p style="text-align:center;">⏳ جاري تحميل تفاصيل الوظيفة...</p>
+    </div>
+
+    <!-- ⭐ نموذج التقديم -->
+    <div id="applyForm">
+      <h3>📨 التقديم على الوظيفة</h3>
+
+      <input type="text" id="cvUrl" placeholder="ضع رابط السيرة الذاتية (PDF / Google Drive)" required>
+
+      <button onclick="submitApplication()">إرسال الطلب</button>
+    </div>
+  </section>
+
+<script>
+let currentJobId = null;
+
+async function loadJobDetails() {
+  const params = new URLSearchParams(window.location.search);
+  currentJobId = params.get("id");
+  const jobContainer = document.getElementById("job-content");
+
+  if (!currentJobId) {
+    jobContainer.innerHTML = "<p style='text-align:center;color:red;'>⚠️ لم يتم تحديد الوظيفة.</p>";
+    return;
+  }
+
+  try {
+    const res = await fetch(`/.netlify/functions/get-job?id=${currentJobId}`);
+    const job = await res.json();
+
+    if (!job || !job.id) {
+      jobContainer.innerHTML = "<p style='text-align:center;'>❌ لم يتم العثور على الوظيفة.</p>";
+      return;
+    }
+
+    jobContainer.innerHTML = `
+      <div class="job-header">
+        <h1>${job.job_title}</h1>
+        <p>${job.company_name}</p>
+      </div>
+
+      <div class="job-meta">
+        <div class="meta-item"><i class="fas fa-map-marker-alt"></i>${job.location}</div>
+        <div class="meta-item"><i class="fas fa-money-bill"></i>${job.salary_range}</div>
+        <div class="meta-item"><i class="fas fa-briefcase"></i>${job.job_type}</div>
+        <div class="meta-item"><i class="fas fa-calendar"></i>${new Date(job.created_at).toLocaleDateString()}</div>
+      </div>
+
+      <p class="job-description">${job.job_description}</p>
+
+      <button class="apply-btn" onclick="showApplyForm()">📨 تقدم الآن</button>
+    `;
+  } catch (error) {
+    jobContainer.innerHTML = "<p style='text-align:center;'>❌ حدث خطأ أثناء تحميل التفاصيل.</p>";
+  }
+}
+
+function showApplyForm() {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user || user.user_type !== "job_seeker") {
+    alert("⚠️ يجب تسجيل الدخول كطالب للتقديم!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  document.getElementById("applyForm").style.display = "block";
+}
+
+async function submitApplication() {
+  const cvUrl = document.getElementById("cvUrl").value.trim();
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!cvUrl) {
+    alert("⚠️ يرجى إدخال رابط السيرة الذاتية");
+    return;
+  }
+
+  const res = await fetch("/.netlify/functions/apply-job", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      job_id: currentJobId,
+      student_id: user.id,
+      cv_url: cvUrl
+    }),
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    alert("✅ تم التقديم بنجاح!");
+    document.getElementById("applyForm").style.display = "none";
+  } else {
+    alert("❌ فشل إرسال الطلب: " + data.error);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadJobDetails);
+</script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 تسجيل الدخول - بوابة الوظائف</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%);
+      color: #fff;
+    }
+
+    /* 🔹 الشريط العلوي */
+    header {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      padding: 14px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 20px;
+      color: #ffd369;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 20px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #fff;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    nav a:hover { color: #ffd369; }
+
+    /* 🔹 نموذج تسجيل الدخول */
+    .login-card {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 35px;
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+      width: 380px;
+      margin: 90px auto;
+      text-align: center;
+    }
+
+    h2 {
+      color: #ffd369;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    p.subtitle {
+      color: #ddd;
+      font-size: 15px;
+      margin-bottom: 25px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    input::placeholder { color: #eee; }
+
+    input:focus {
+      outline: 2px solid #ffd369;
+      background: rgba(255,255,255,0.25);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg,#007bff,#0056b3);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+      background: linear-gradient(135deg,#005ecb,#004b91);
+    }
+
+    .alert {
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: none;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .alert.show { display: block; }
+    .alert-success {
+      background: rgba(40,167,69,0.2);
+      color: #9bffb2;
+      border: 1px solid #28a745;
+    }
+    .alert-error {
+      background: rgba(220,53,69,0.2);
+      color: #ffb1b1;
+      border: 1px solid #dc3545;
+    }
+
+    a {
+      color: #ffd369;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: #aaa;
+      font-size: 13px;
+      margin-top: 40px;
+      padding-bottom: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 🔹 الشريط العلوي -->
+  <header>
+    <div class="logo">💼 بوابة <span style="color:#fff;">الوظائف</span></div>
+    <nav>
+      <ul>
+        <li><a href="jobs.html">الوظائف</a></li>
+        <li><a href="signup.html">التسجيل</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- 🔹 نموذج تسجيل الدخول -->
+  <div class="login-card">
+    <h2>🔐 تسجيل الدخول</h2>
+    <p class="subtitle">مرحبًا بعودتك! سجل دخولك للوصول إلى حسابك</p>
+
+    <div id="alertBox" class="alert"></div>
+
+    <form id="loginForm">
+      <input id="email" type="email" name="email" placeholder="البريد الإلكتروني" required />
+      <input id="password" type="password" name="password" placeholder="كلمة المرور" required />
+      <button type="submit">تسجيل الدخول</button>
+    </form>
+
+    <p style="margin-top: 15px;">ليس لديك حساب؟ <a href="signup.html">إنشاء حساب جديد</a></p>
+  </div>
+
+  <footer>© 2025 بوابة الوظائف - جامعة جازان</footer>
+
+  <!-- 🔹 كود تسجيل الدخول -->
+  <script>
+    const alertBox = document.getElementById("alertBox");
+
+    function showAlert(message, type) {
+      alertBox.textContent = message;
+      alertBox.className = `alert show ${type === "success" ? "alert-success" : "alert-error"}`;
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+
+      try {
+        const res = await fetch("/.netlify/functions/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          showAlert(result.message || "❌ فشل تسجيل الدخول", "error");
+          return;
+        }
+
+        // ✅ نجاح تسجيل الدخول
+        const user = result.user;
+        showAlert("✅ تم تسجيل الدخول بنجاح!", "success");
+
+        localStorage.setItem("user", JSON.stringify({
+          id: user.id,
+          full_name: user.full_name,
+          email: user.email,
+          user_type: user.user_type,
+          status: user.status
+        }));
+
+        // ✅ إعادة التوجيه حسب نوع الحساب
+        setTimeout(() => {
+          if (user.user_type === "company") {
+            window.location.href = "company-dashboard.html"; // لوحة تحكم الشركات
+          } else if (user.user_type === "job_seeker" || user.user_type === "student") {
+            window.location.href = "jobs.html"; // صفحة الوظائف للطلاب
+          } else {
+            showAlert("⚠️ نوع المستخدم غير معروف، تواصل مع الدعم", "error");
+          }
+        }, 1200);
+
+      } catch (error) {
+        console.error("⚠️ خطأ:", error);
+        showAlert("⚠️ حدث خطأ أثناء الاتصال بالخادم", "error");
+      }
+    });
+  </script>
+</body>
+</html>
