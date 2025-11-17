@@ -2,16 +2,87 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>طلباتي</title>
+<title>📄 طلباتي</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
-body { background:#eef1f5; font-family:'Tajawal'; margin:0; padding:20px; }
-.card {
-  background:white; padding:20px; margin-bottom:15px;
-  border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);
-}
-.title { font-size:18px; font-weight:700; color:#007bff; }
-.status { font-weight:bold; margin-top:10px; }
+  body {
+    background:#eef1f5;
+    font-family:'Tajawal', sans-serif;
+    margin:0;
+    padding:20px;
+  }
+
+  h2 {
+    color:#007bff;
+    margin-bottom:20px;
+  }
+
+  .card {
+    background:white;
+    padding:20px;
+    margin-bottom:15px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  .title {
+    font-size:18px;
+    font-weight:700;
+    color:#007bff;
+    margin-bottom:5px;
+  }
+
+  .status {
+    font-weight:bold;
+    margin-top:10px;
+  }
+
+  .badge {
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:13px;
+    margin-top:6px;
+  }
+
+  .accepted {
+    color:green;
+  }
+  .rejected {
+    color:red;
+  }
+  .pending {
+    color:orange;
+  }
+
+  .badge-accepted {
+    background:#e6f9ec;
+    color:#1e7e34;
+  }
+  .badge-rejected {
+    background:#fdecea;
+    color:#c82333;
+  }
+  .badge-pending {
+    background:#fff4e5;
+    color:#e69500;
+  }
+
+  .interview-box {
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    background:#e8f4ff;
+    border:1px solid #b6daff;
+    font-weight:600;
+  }
+
+  a {
+    color:#007bff;
+    font-weight:600;
+    text-decoration:none;
+  }
 </style>
 </head>
 
@@ -21,12 +92,18 @@ body { background:#eef1f5; font-family:'Tajawal'; margin:0; padding:20px; }
 <div id="list"></div>
 
 <script>
+// ===============================
+// 🔐 التحقق من تسجيل دخول الطالب
+// ===============================
 const user = JSON.parse(localStorage.getItem("user"));
 if (!user || user.user_type !== "student") {
-  alert("يجب تسجيل الدخول كطالب.");
+  alert("⚠️ يجب تسجيل الدخول كطالب.");
   location.href = "login.html";
 }
 
+// ===============================
+// 📌 تحميل الطلبات
+// ===============================
 async function loadApplications() {
   const res = await fetch(`/.netlify/functions/get-student-applications?student_id=${user.id}`);
   const data = await res.json();
@@ -34,22 +111,88 @@ async function loadApplications() {
   const container = document.getElementById("list");
   container.innerHTML = "";
 
-  if (!data.applications.length) {
-    container.innerHTML = "<p>لا توجد طلبات حتى الآن.</p>";
+  if (!data.applications || !data.applications.length) {
+    container.innerHTML = "<p>❗ لا توجد طلبات حتى الآن.</p>";
     return;
   }
 
+  let hasNewAccepted = false;
+  let hasNewInterview = false;
+
+  // نقرأ آخر حالة تم تنبيه الطالب بها من localStorage
+  const notifiedAccepted = JSON.parse(localStorage.getItem("notifiedAcceptedApps") || "[]");
+  const notifiedInterview = JSON.parse(localStorage.getItem("notifiedInterviewApps") || "[]");
+
   data.applications.forEach(app => {
+    // نضمن أن الحالة متوافقة (عربي أو إنجليزي)
+    const status = (app.status || "").toLowerCase();
+    let readableStatus = app.status || "غير محدد";
+    let statusClass = "pending";
+    let badgeClass = "badge-pending";
+
+    if (status === "accepted" || status === "مقبول") {
+      statusClass = "accepted";
+      badgeClass = "badge-accepted";
+      readableStatus = "مقبول";
+
+      if (!notifiedAccepted.includes(app.id)) {
+        hasNewAccepted = true;
+        notifiedAccepted.push(app.id);
+      }
+    } else if (status === "rejected" || status === "مرفوض") {
+      statusClass = "rejected";
+      badgeClass = "badge-rejected";
+      readableStatus = "مرفوض";
+    } else {
+      readableStatus = "قيد المراجعة";
+    }
+
+    // تنبيه مقابلة جديدة
+    const hasInterviewDate = !!app.interview_date;
+    if (hasInterviewDate && !notifiedInterview.includes(app.id)) {
+      hasNewInterview = true;
+      notifiedInterview.push(app.id);
+    }
+
     container.innerHTML += `
       <div class="card">
-        <div class="title">${app.job_title} - ${app.company_name}</div>
-        <div>📍 ${app.location} | 💰 ${app.salary_range}</div>
-        <div>📅 تاريخ التقديم: ${app.created_at}</div>
-        <div class="status">الحالة: ${app.status}</div>
-        <a href="${app.cv_link}" target="_blank">عرض السيرة الذاتية</a>
+        <div class="title">💼 ${app.job_title} – ${app.company_name}</div>
+        <div>📍 ${app.location} | 💰 ${app.salary_range || "غير محدد"}</div>
+        <div>📅 تاريخ التقديم: ${app.created_at ? app.created_at.split("T")[0] : ""}</div>
+
+        <div class="status ${statusClass}">
+          📝 الحالة:
+          <span class="badge ${badgeClass}">${readableStatus}</span>
+        </div>
+
+        ${hasInterviewDate ? `
+          <div class="interview-box">
+            📅 تم تحديد موعد المقابلة:<br>
+            ${app.interview_date}
+          </div>
+        ` : ""}
+
+        ${app.cv_link || app.cv_url ? `
+          <div style="margin-top:10px;">
+            <a href="${app.cv_link || app.cv_url}" target="_blank">📎 عرض السيرة الذاتية</a>
+          </div>
+        ` : ""}
       </div>
     `;
   });
+
+  // حفظ ما تم تنبيهه حتى لا يتكرر كل مرة
+  localStorage.setItem("notifiedAcceptedApps", JSON.stringify(notifiedAccepted));
+  localStorage.setItem("notifiedInterviewApps", JSON.stringify(notifiedInterview));
+
+  // 🔔 تنبيهات مرة واحدة فقط عندما يكون فيه جديد
+  if (hasNewAccepted && hasNewInterview) {
+    alert("🎉 مبروك! تم قبول بعض طلباتك وتحديد مقابلات شخصية. تفقد صفحة طلباتك.");
+  } else if (hasNewAccepted) {
+    alert("🎉 مبروك! تم قبول أحد طلباتك. تفقد صفحة طلباتك لمعرفة التفاصيل.");
+  } else if (hasNewInterview) {
+    alert("📅 تم تحديد موعد مقابلة شخصية لإحدى الوظائف التي تقدمت لها. تفقد صفحة طلباتك.");
+  }
 }
 
 loadApplications();

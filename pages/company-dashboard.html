@@ -153,128 +153,73 @@
     </div>
 
     <div id="applicationsList"></div>
-  </div>
 
-  <script>
-    const userData = JSON.parse(localStorage.getItem("user"));
-    if (!userData || userData.user_type !== "company") {
-      alert("⚠️ يجب تسجيل الدخول كشركة!");
-      window.location.href = "../pages/login.html";
-    }
+<script>
+async function loadApplications() {
+  const res = await fetch("/.netlify/functions/get-company-applications?company_id=" + userData.id);
+  const applications = await res.json();
+  displayApplications(applications);
+}
 
-    document.getElementById("welcome").textContent =
-      `مرحبًا، ${userData.full_name || "شركة"} 👋`;
+function displayApplications(apps) {
+  applicationsList.innerHTML = apps.map(app => `
+    <div class="card">
+      <h4>👤 الطالب: ${app.applicant_name}</h4>
+      <p>📧 البريد: ${app.email}</p>
+      <p>💼 الوظيفة: ${app.job_title}</p>
+      <p>📄 حالة الطلب: <strong>${app.status}</strong></p>
+      
+      ${app.cv_url ? `<a href="${app.cv_url}" target="_blank" style="color:#0af;font-weight:bold;">📎 عرض السيرة الذاتية</a>` : ''}
 
-    const addJobBtn = document.getElementById("addJobBtn");
-    const jobForm = document.getElementById("jobForm");
-    const submitJobBtn = document.getElementById("submitJobBtn");
-    const jobsList = document.getElementById("jobsList");
-    const applicationsList = document.getElementById("applicationsList");
-    const filterSelect = document.getElementById("filterSelect");
+      <br><br>
 
-    addJobBtn.addEventListener("click", () => {
-      jobForm.style.display = jobForm.style.display === "none" ? "block" : "none";
-    });
+      ${app.status === "جديد" ? `
+        <button onclick="acceptApplication(${app.id})">✔️ قبول</button>
+        <button onclick="rejectApplication(${app.id})">❌ رفض</button>
+      ` : ''}
 
-    submitJobBtn.addEventListener("click", async () => {
-      const job_title = document.getElementById("jobTitle").value.trim();
-      const job_description = document.getElementById("jobDescription").value.trim();
-      const location = document.getElementById("jobLocation").value.trim();
-      const salary_range = document.getElementById("jobSalary").value.trim();
-      const company_name = userData.full_name;
+      ${app.status === "مقبول" ? `
+        <div>
+          <h4>📅 تحديد موعد مقابلة</h4>
+          <input type="datetime-local" id="date-${app.id}">
+          <button onclick="saveInterview(${app.id})">💾 حفظ الموعد</button>
+        </div>
+      ` : ''}
+    </div>
+  `).join("");
+}
 
-      if (!job_title || !job_description || !location || !salary_range) {
-        alert("⚠️ يرجى تعبئة جميع الحقول");
-        return;
-      }
+async function acceptApplication(id) {
+  await updateStatus(id, "مقبول");
+}
 
-      const res = await fetch("/.netlify/functions/add-job", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          job_title,
-          job_description,
-          location,
-          salary_range,
-          company_id: userData.id,
-          company_name,
-          job_type: "Full-time"
-        }),
-      });
+async function rejectApplication(id) {
+  await updateStatus(id, "مرفوض");
+}
 
-      if (res.ok) {
-        alert("✅ تم نشر الوظيفة بنجاح!");
-        jobForm.style.display = "none";
-        loadJobs();
-      } else {
-        alert("❌ حدث خطأ!");
-      }
-    });
+async function updateStatus(appId, newStatus) {
+  const res = await fetch("/.netlify/functions/update-application-status", {
+    method: "POST",
+    body: JSON.stringify({ id: appId, status: newStatus }),
+  });
+  loadApplications();
+}
 
-    async function loadJobs() {
-      const res = await fetch("/.netlify/functions/get-company-jobs?company_id=" + userData.id);
-      const jobs = await res.json();
+async function saveInterview(appId) {
+  const interview_date = document.getElementById(`date-${appId}`).value;
 
-      jobsList.innerHTML = jobs.length
-        ? jobs.map(job => `
-            <div class="card">
-              <h4>${job.job_title}</h4>
-              <p>${job.job_description}</p>
-              <p>📍 ${job.location} | 💰 ${job.salary_range}</p>
-            </div>
-          `).join("")
-        : "<p>🚫 لا توجد وظائف منشورة.</p>";
-    }
+  const res = await fetch("/.netlify/functions/set-interview", {
+    method: "POST",
+    body: JSON.stringify({
+      application_id: appId,
+      interview_date
+    })
+  });
 
-    async function loadApplications() {
-      const res = await fetch("/.netlify/functions/get-company-applications?company_id=" + userData.id);
-      const data = await res.json();
-      displayApplications(data.applications);
-    }
+  alert("✔️ تم حفظ موعد المقابلة");
+  loadApplications();
+}
+</script>
 
-    function displayApplications(apps) {
-      const filter = filterSelect.value;
-      const filtered = apps.filter(app =>
-        filter === "all" ? true : app.status === filter
-      );
-
-      applicationsList.innerHTML = filtered.length
-        ? filtered.map(app => `
-            <div class="card">
-              <h4>${app.student_name}</h4>
-              <p>${app.job_title}</p>
-              <p>📧 ${app.student_email}</p>
-              <p>📄 الحالة: ${app.status}</p>
-              <a href="${app.cv_link}" target="_blank">📄 عرض السيرة الذاتية</a>
-              <br><br>
-              <button class="btn-accept" onclick="updateStatus(${app.id}, 'accepted')">قبول</button>
-              <button class="btn-reject" onclick="updateStatus(${app.id}, 'rejected')">رفض</button>
-            </div>
-          `).join("")
-        : "<p>🚫 لا توجد طلبات مطابقة.</p>";
-    }
-
-    async function updateStatus(appId, newStatus) {
-      const res = await fetch("/.netlify/functions/update-application-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ application_id: appId, status: newStatus }),
-      });
-
-      if (res.ok) {
-        alert("✅ تم تحديث الحالة");
-        loadApplications();
-      } else {
-        alert("❌ فشل التحديث");
-      }
-    }
-
-    filterSelect.addEventListener("change", loadApplications);
-
-    window.onload = () => {
-      loadJobs();
-      loadApplications();
-    };
-  </script>
 </body>
 </html>

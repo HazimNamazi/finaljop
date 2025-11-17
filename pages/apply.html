@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>التقديم على الوظيفة</title>
+  <title>📄 التقديم على الوظيفة</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -26,13 +27,14 @@
 
     h2 { margin-bottom: 15px; color: #007bff; }
 
-    input {
+    input[type="file"] {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
       margin-bottom: 20px;
       font-size: 16px;
+      background: #fff;
     }
 
     button {
@@ -64,6 +66,7 @@
   <p>قم برفع السيرة الذاتية (PDF):</p>
 
   <input type="file" id="cvFile" accept="application/pdf">
+
   <button onclick="submitApplication()">إرسال التقديم</button>
 
   <p id="statusMessage"></p>
@@ -71,7 +74,7 @@
 
 <script>
   // ================================
-  // 🔐 التحقق من تسجيل الدخول — النسخة النهائية
+  // 🔐 التحقق من تسجيل الدخول
   // ================================
   let user = null;
 
@@ -79,14 +82,12 @@
     user = JSON.parse(localStorage.getItem("user"));
   }
 
-  // منع غير المسجلين
   if (!user || !user.id) {
     alert("⚠️ يجب تسجيل الدخول كطالب للتقديم.");
     window.location.href = "login.html";
   }
 
-  // السماح لـ student و job_seeker
-  if (user.user_type !== "student" && user.user_type !== "job_seeker") {
+  if (user.user_type !== "student") {
     alert("⚠️ فقط الطلاب يمكنهم التقديم على الوظائف.");
     window.location.href = "login.html";
   }
@@ -103,50 +104,32 @@
   }
 
   // ================================
-  // 🚀 إرسال التقديم
+  // 🚀 رفع السيرة الذاتية وإرسال الطلب
   // ================================
   async function submitApplication() {
     const fileInput = document.getElementById("cvFile");
     const statusMsg = document.getElementById("statusMessage");
 
-    if (!fileInput.files.length) {
+    if (fileInput.files.length === 0) {
       statusMsg.style.color = "red";
-      statusMsg.innerText = "⚠️ يرجى رفع ملف PDF.";
+      statusMsg.innerText = "⚠️ يرجى اختيار ملف PDF.";
       return;
     }
 
-    const cvFile = fileInput.files[0];
+    const file = fileInput.files[0];
 
-    // رفع الملف إلى Function upload
     const formData = new FormData();
-    formData.append("cv", cvFile);
+    formData.append("student_id", user.id);
+    formData.append("job_id", jobId);
+    formData.append("file", file);
+
+    statusMsg.style.color = "black";
+    statusMsg.innerText = "⏳ جاري إرسال الطلب...";
 
     try {
-      // 1) رفع الملف
-      const uploadRes = await fetch("/.netlify/functions/upload-cv", {
+      const res = await fetch("/.netlify/functions/upload-cv", {
         method: "POST",
         body: formData
-      });
-
-      const uploadData = await uploadRes.json();
-
-      if (!uploadData.success) {
-        statusMsg.style.color = "red";
-        statusMsg.innerText = "❌ فشل رفع السيرة الذاتية.";
-        return;
-      }
-
-      const cvUrl = uploadData.url;
-
-      // 2) إرسال التقديم
-      const res = await fetch("/.netlify/functions/apply-job", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          job_id: jobId,
-          student_id: user.id,
-          cv_link: cvUrl
-        })
       });
 
       const data = await res.json();
@@ -156,13 +139,13 @@
         statusMsg.innerText = "✔️ تم إرسال طلبك بنجاح!";
       } else {
         statusMsg.style.color = "red";
-        statusMsg.innerText = "❌ حدث خطأ أثناء إرسال الطلب.";
+        statusMsg.innerText = "❌ فشل إرسال الطلب.";
       }
 
     } catch (error) {
       console.error(error);
       statusMsg.style.color = "red";
-      statusMsg.innerText = "❌ فشل الاتصال بالخادم.";
+      statusMsg.innerText = "❌ خطأ في الاتصال بالخادم.";
     }
   }
 </script>
