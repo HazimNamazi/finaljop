@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>التقديم على الوظيفة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: #eef1f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 70px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h2 { margin-bottom: 15px; color: #007bff; }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 17px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover { background: #005ecb; }
+
+    #statusMessage {
+      margin-top: 15px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>📄 التقديم على الوظيفة</h2>
+  <p>أدخل رابط السيرة الذاتية (CV):</p>
+
+  <input type="text" id="cvLink" placeholder="أدخل رابط الـ CV هنا...">
+
+  <button onclick="submitApplication()">إرسال التقديم</button>
+
+  <p id="statusMessage"></p>
+</div>
+
+<script>
+  // ================================
+  // 🔐 التحقق من تسجيل الدخول — النسخة الصحيحة 100%
+  // ================================
+  let user = null;
+
+  // جلب المستخدم من أي مسار محتمل
+  if (localStorage.getItem("user")) {
+    user = JSON.parse(localStorage.getItem("user"));
+  }
+
+  if (!user || !user.id) {
+    alert("⚠️ يجب تسجيل الدخول كطالب للتقديم على الوظائف.");
+    window.location.href = "login.html";
+  }
+
+  if (user.user_type !== "student") {
+    alert("⚠️ فقط الطلاب يمكنهم التقديم على الوظائف.");
+    window.location.href = "login.html";
+  }
+
+  // ================================
+  // 📌 الحصول على معرف الوظيفة
+  // ================================
+  const urlParams = new URLSearchParams(window.location.search);
+  const jobId = urlParams.get("jobId");
+
+  if (!jobId) {
+    document.getElementById("statusMessage").innerHTML =
+      "<span style='color:red;'>❌ خطأ: لا يوجد وظيفه محددة!</span>";
+  }
+
+  // ================================
+  // 🚀 إرسال التقديم
+  // ================================
+  async function submitApplication() {
+    const cvLink = document.getElementById("cvLink").value.trim();
+    const statusMsg = document.getElementById("statusMessage");
+
+    if (!cvLink) {
+      statusMsg.style.color = "red";
+      statusMsg.innerText = "⚠️ يرجى إدخال رابط الـ CV.";
+      return;
+    }
+
+    try {
+      const res = await fetch("/.netlify/functions/apply-job", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          job_id: jobId,
+          student_id: user.id,
+          cv_link: cvLink
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        statusMsg.style.color = "green";
+        statusMsg.innerText = "✔️ تم إرسال طلبك بنجاح! سيتم إشعارك بالقبول أو الرفض.";
+      } else {
+        statusMsg.style.color = "red";
+        statusMsg.innerText = "❌ حدث خطأ أثناء إرسال الطلب.";
+      }
+
+    } catch (error) {
+      console.error(error);
+      statusMsg.style.color = "red";
+      statusMsg.innerText = "❌ فشل الاتصال بالخادم.";
+    }
+  }
+</script>
+
+</body>
+</html>

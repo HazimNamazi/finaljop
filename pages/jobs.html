@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💼 الوظائف المتاحة - بوابة الوظائف</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Tajawal', sans-serif; background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%); color: white; margin: 0; padding: 0; }
+    header { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); display: flex; justify-content: space-between; padding: 14px 40px; }
+    .logo { font-weight: 700; color: #ffd369; font-size: 20px; display: flex; gap: 8px; }
+    nav ul { list-style: none; display: flex; gap: 20px; }
+    nav a { color: #fff; font-weight: 600; text-decoration: none; }
+    .jobs-container { max-width: 900px; margin: 60px auto; background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); padding: 30px; border-radius: 16px; }
+    .job-card { background: rgba(255,255,255,0.15); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+    .job-title { font-size: 20px; font-weight: 700; color: #fff; }
+    .company-name { color: #ffd369; font-weight: 600; }
+    button { background: linear-gradient(135deg, #007bff, #0056b3); border: none; padding: 10px 16px; border-radius: 8px; color: white; cursor: pointer; font-size: 15px; }
+    button:hover { transform: scale(1.05); }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">💼 بوابة الوظائف</div>
+    <nav>
+      <ul>
+        <li><a href="jobs.html" style="color:#ffd369;">الوظائف</a></li>
+        <li><a href="login.html">تسجيل الدخول</a></li>
+        <li><a href="signup.html">إنشاء حساب</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="jobs-container">
+    <h2>💼 الوظائف المتاحة</h2>
+    <div id="jobsList">⏳ جارٍ تحميل الوظائف...</div>
+  </section>
+
+  <script>
+    async function fetchJobs() {
+      const jobsList = document.getElementById("jobsList");
+
+      try {
+        const res = await fetch("/.netlify/functions/get-jobs");
+        const data = await res.json();
+        const jobs = data.jobs || [];
+
+        if (jobs.length === 0) {
+          jobsList.innerHTML = "<p style='text-align:center;color:#ccc;'>🚫 لا توجد وظائف متاحة حالياً</p>";
+          return;
+        }
+
+        jobsList.innerHTML = jobs.map(job => `
+          <div class="job-card">
+            <div class="job-title">${job.job_title}</div>
+            <div class="company-name">🏢 ${job.company_name}</div>
+            <div class="job-location">📍: ${job.location}</div>
+            <div class="job-salary">💰 الراتب: ${job.salary_range || "غير محدد"}</div>
+            <p style="color:#eee;">${job.job_description}</p>
+
+            <button onclick="applyJob(${job.id})">📄 التقديم على الوظيفة</button>
+          </div>
+        `).join("");
+
+      } catch (err) {
+        jobsList.innerHTML = "<p style='color:red;text-align:center;'>⚠️ فشل تحميل الوظائف</p>";
+      }
+    }
+
+    function applyJob(jobId) {
+      window.location.href = `apply.html?jobId=${jobId}`;
+    }
+
+    fetchJobs();
+  </script>
+
+</body>
+</html>

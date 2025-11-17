@@ -1,0 +1,128 @@
+/* 🔵 RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Tajawal", sans-serif;
+  background: #ffffff;
+  color: #222;
+  line-height: 1.6;
+}
+
+/* 🔵 NAVBAR */
+.navbar {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #007bff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+}
+
+.nav-links a {
+  color: #333;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav-links a:hover {
+  color: #007bff;
+}
+
+/* 🔵 PAGE WRAPPER */
+.page {
+  padding: 40px 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+/* 🔵 FORMS */
+form {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 15px;
+}
+
+input:focus, textarea:focus {
+  border-color: #007bff;
+}
+
+/* 🔵 BUTTONS */
+button {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #005fcc;
+}
+
+/* 🔵 JOB CARDS */
+.job-card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  margin-bottom: 20px;
+}
+
+.job-card:hover {
+  transform: translateY(-3px);
+  transition: 0.2s;
+}
+
+/* 🔵 TITLES */
+h1, h2, h3 {
+  color: #007bff;
+  margin-bottom: 15px;
+}
+
+/* 🔵 DASHBOARD */
+.card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
