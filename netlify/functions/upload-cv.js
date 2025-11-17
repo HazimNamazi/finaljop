@@ -1,42 +1,64 @@
-import { neon } from "@neondatabase/serverless";
-import multiparty from "multiparty";
-import fs from "fs";
-
-export const handler = async (event) => {
-  try {
-    const form = new multiparty.Form();
-
-    const result = await new Promise((resolve, reject) => {
-      form.parse(event, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve({ fields, files });
+exports.handler = async (event) => {
+    try {
+      if (event.httpMethod !== "POST") {
+        return {
+          statusCode: 405,
+          body: JSON.stringify({ success: false, message: "Method Not Allowed" })
+        };
+      }
+  
+      // استخراج الملف من Body
+      const contentType = event.headers["content-type"] || event.headers["Content-Type"];
+  
+      if (!contentType.startsWith("multipart/form-data")) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ success: false, message: "Invalid file data" })
+        };
+      }
+  
+      const boundary = contentType.split("boundary=")[1];
+      const body = Buffer.from(event.body, "base64").toString();
+  
+      const fileStart = body.indexOf("PDF");
+      if (fileStart === -1) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ success: false, message: "Not a valid PDF file." })
+        };
+      }
+  
+      const fileBuffer = Buffer.from(body.substring(fileStart), "binary").toString("base64");
+  
+      // اسم فريد للملف
+      const fileName = `cv_${Date.now()}.pdf`;
+  
+      // رفع الملف إلى Netlify Blob Storage
+      const { Blobs } = await import("@netlify/blobs");
+      const blobs = new Blobs({ token: process.env.NETLIFY_BLOBS_TOKEN });
+  
+      await blobs.set(fileName, fileBuffer, {
+        metadata: { type: "application/pdf" },
+        encoding: "base64"
       });
-    });
-
-    const job_id = fields.job_id[0];
-    const student_id = fields.student_id[0];
-
-    const file = files.cv[0];
-    const fileData = fs.readFileSync(file.path);
-    const fileBase64 = fileData.toString("base64");
-
-    const sql = neon(process.env.NETLIFY_DATABASE_URL);
-
-    await sql`
-      INSERT INTO applications (job_id, student_id, cv_file)
-      VALUES (${job_id}, ${student_id}, ${fileBase64})
-    `;
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true })
-    };
-
-  } catch (error) {
-    console.error(error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ success: false, error })
-    };
-  }
-};
+  
+      const fileUrl = blobs.getPublicUrl(fileName);
+  
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: true,
+          message: "CV uploaded successfully",
+          url: fileUrl
+        })
+      };
+  
+    } catch (error) {
+      console.error("Upload Error:", error);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ success: false, message: "Server error" })
+      };
+    }
+  };
+  

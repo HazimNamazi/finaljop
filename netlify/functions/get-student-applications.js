@@ -1,40 +1,44 @@
-// netlify/functions/get-student-applications.js
 import { neon } from "@neondatabase/serverless";
 
 export async function handler(event) {
   try {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
-    const { student_id } = event.queryStringParameters || {};
+
+    const student_id = event.queryStringParameters.student_id;
 
     if (!student_id) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "❌ يجب إرسال رقم الطالب (student_id)." }),
+        body: JSON.stringify({ success: false, message: "student_id is required" })
       };
     }
 
-    const apps = await sql`
+    const applications = await sql`
       SELECT 
-        a.id,
-        a.status,
-        a.created_at,
-        j.job_title,
-        j.company_name
-      FROM applications a
-      JOIN jobs j ON a.job_id = j.id
-      WHERE a.student_id = ${student_id}
-      ORDER BY a.created_at DESC;
+        applications.id,
+        applications.status,
+        applications.cv_link,
+        applications.created_at,
+        jobs.job_title,
+        jobs.company_name,
+        jobs.location,
+        jobs.salary_range
+      FROM applications
+      JOIN jobs ON applications.job_id = jobs.id
+      WHERE applications.student_id = ${student_id}
+      ORDER BY applications.created_at DESC;
     `;
 
     return {
       statusCode: 200,
-      body: JSON.stringify(apps),
+      body: JSON.stringify({ success: true, applications })
     };
+
   } catch (error) {
-    console.error("❌ Error loading student applications:", error);
+    console.error("Error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "❌ فشل في تحميل الطلبات.", error: error.message }),
+      body: JSON.stringify({ success: false, message: "Server Error" })
     };
   }
 }
