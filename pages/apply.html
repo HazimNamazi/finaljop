@@ -72,83 +72,49 @@
 </div>
 
 <script>
-  // ====== تحقق من تسجيل دخول الطالب ======
-  let user = JSON.parse(localStorage.getItem("user"));
-
-  if (!user || (user.user_type !== "student" && user.user_type !== "job_seeker")) {
-    alert("⚠️ فقط الطلاب يمكنهم التقديم على الوظائف.");
-    window.location.href = "login.html";
-  }
-
-  // === الحصول على jobId ===
-  const jobId = new URLSearchParams(window.location.search).get("jobId");
-
-  if (!jobId) {
-    document.getElementById("statusMessage").innerHTML =
-      "<span style='color:red;'>❌ لا يوجد وظيفة محددة!</span>";
-  }
-
-  // ====== رفع الملف + إرسال الطلب ======
   async function submitApplication() {
     const fileInput = document.getElementById("cvFile");
     const statusMsg = document.getElementById("statusMessage");
-
+  
     if (!fileInput.files.length) {
+      statusMsg.innerHTML = "⚠️ الرجاء اختيار ملف PDF.";
       statusMsg.style.color = "red";
-      statusMsg.innerText = "⚠️ يرجى اختيار ملف PDF.";
       return;
     }
-
+  
     const file = fileInput.files[0];
-
-    try {
-      // 1️⃣ رفع CV
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const uploadRes = await fetch("/.netlify/functions/upload-cv", {
-        method: "POST",
-        body: formData
-      });
-
-      const uploadData = await uploadRes.json();
-
-      if (!uploadData.url) {
-        statusMsg.style.color = "red";
-        statusMsg.innerText = "❌ فشل رفع الملف.";
-        return;
-      }
-
-      const cvLink = uploadData.url;
-
-      // 2️⃣ تسجيل التقديم
-      const applyRes = await fetch("/.netlify/functions/apply-job", {
+  
+    // قراءة الملف Base64
+    const reader = new FileReader();
+    reader.onload = async function () {
+      const base64File = reader.result.split(",")[1];
+  
+      const res = await fetch("/.netlify/functions/upload-cv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           job_id: jobId,
           student_id: user.id,
-          cv_link: cvLink
-        })
+          fileName: file.name,
+          fileContent: base64File
+        }),
       });
-
-      const data = await applyRes.json();
-
+  
+      const data = await res.json();
+  
       if (data.success) {
+        statusMsg.innerHTML = "✔️ تم رفع السيرة الذاتية بنجاح!";
         statusMsg.style.color = "green";
-        statusMsg.innerText = "✔️ تم إرسال طلبك بنجاح!";
       } else {
+        statusMsg.innerHTML = "❌ فشل رفع الملف.";
         statusMsg.style.color = "red";
-        statusMsg.innerText = "❌ حدث خطأ أثناء الإرسال.";
       }
-
-    } catch (err) {
-      console.error(err);
-      statusMsg.style.color = "red";
-      statusMsg.innerText = "❌ فشل الاتصال بالخادم.";
-    }
+    };
+  
+    reader.readAsDataURL(file);
   }
-</script>
+  </script>
+  
 
 </body>
 </html>
