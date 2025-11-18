@@ -73,28 +73,18 @@
 
 <script>
 
-  /* -----------------------------------------
-     1) جلب jobId من الرابط
-     ----------------------------------------- */
   const urlParams = new URLSearchParams(window.location.search);
-  const jobId = urlParams.get("id") || urlParams.get("job_id");
+  const jobId = urlParams.get("job_id");
 
   if (!jobId) {
-    console.error("❌ لا يوجد jobId في رابط الصفحة");
+    console.error("❌ لا يوجد job_id في رابط الصفحة");
   }
 
-  /* -----------------------------------------
-     2) جلب بيانات الطالب من localStorage
-     ----------------------------------------- */
   const user = JSON.parse(localStorage.getItem("user"));
-
   if (!user || !user.id) {
     console.error("❌ لا يوجد user.id في localStorage");
   }
 
-  /* -----------------------------------------
-     3) إرسال الطلب
-     ----------------------------------------- */
   async function submitApplication() {
     const fileInput = document.getElementById("cvFile");
     const statusMsg = document.getElementById("statusMessage");
