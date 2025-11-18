@@ -7,7 +7,6 @@ export async function handler(event) {
 
     const { job_id, student_id, fileName, fileContent } = body;
 
-    // التحقق من جميع القيم المطلوبة
     if (!job_id || !student_id || !fileName || !fileContent) {
       return {
         statusCode: 400,
@@ -19,16 +18,18 @@ export async function handler(event) {
       };
     }
 
-    // تنفيذ الإدخال
+    // تحويل ملف PDF إلى Base64 URL ونخزنه في cv_url
+    const pdf_url = `data:application/pdf;base64,${fileContent}`;
+
     const result = await sql`
-      INSERT INTO applications (job_id, student_id, file_name, file_data)
-      VALUES (${job_id}, ${student_id}, ${fileName}, ${fileContent})
+      INSERT INTO applications (job_id, cv_url)
+      VALUES (${job_id}, ${pdf_url})
       RETURNING *;
     `;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, data: result })
+      body: JSON.stringify({ success: true, data: result }),
     };
 
   } catch (err) {
