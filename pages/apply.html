@@ -7,54 +7,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background: #eef1f5;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 70px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-
-    h2 { margin-bottom: 15px; color: #007bff; }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 20px;
-      font-size: 16px;
-      background: #f8f8f8;
-    }
-
-    button {
-      background: #007bff;
-      color: white;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      font-size: 17px;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-
+    body { font-family: 'Tajawal', sans-serif; background: #eef1f5; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 70px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; }
+    h2 { color: #007bff; }
+    input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; }
+    button { background: #007bff; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-size: 17px; cursor: pointer; }
     button:hover { background: #005ecb; }
-
-    #statusMessage {
-      margin-top: 15px;
-      font-weight: 600;
-    }
   </style>
 </head>
 
@@ -65,41 +23,33 @@
   <p>قم برفع السيرة الذاتية (PDF)</p>
 
   <input type="file" id="cvFile" accept="application/pdf">
-
   <button onclick="submitApplication()">إرسال التقديم</button>
 
   <p id="statusMessage"></p>
 </div>
 
 <script>
+  const params = new URLSearchParams(window.location.search);
+  const jobId = params.get("job_id");
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const jobId = urlParams.get("job_id");
-
-  if (!jobId) {
-    console.error("❌ لا يوجد job_id في رابط الصفحة");
-  }
+  if (!jobId) console.error("❌ لا يوجد job_id بالرابط");
 
   const user = JSON.parse(localStorage.getItem("user"));
-  if (!user || !user.id) {
-    console.error("❌ لا يوجد user.id في localStorage");
-  }
+  if (!user?.id) console.error("❌ لا يوجد user.id");
 
   async function submitApplication() {
-    const fileInput = document.getElementById("cvFile");
-    const statusMsg = document.getElementById("statusMessage");
+    const file = document.getElementById("cvFile").files[0];
+    const msg = document.getElementById("statusMessage");
 
-    if (!fileInput.files.length) {
-      statusMsg.innerHTML = "⚠️ الرجاء اختيار ملف PDF.";
-      statusMsg.style.color = "red";
+    if (!file) {
+      msg.innerHTML = "⚠️ الرجاء اختيار ملف PDF.";
+      msg.style.color = "red";
       return;
     }
 
-    const file = fileInput.files[0];
-
     const reader = new FileReader();
-    reader.onload = async function () {
-      const base64File = reader.result.split(",")[1];
+    reader.onload = async function() {
+      const base64 = reader.result.split(",")[1];
 
       const res = await fetch("/.netlify/functions/upload-cv", {
         method: "POST",
@@ -108,18 +58,17 @@
           job_id: jobId,
           student_id: user.id,
           fileName: file.name,
-          fileContent: base64File
+          fileContent: base64
         }),
       });
 
       const data = await res.json();
-
       if (data.success) {
-        statusMsg.innerHTML = "✔️ تم رفع السيرة الذاتية بنجاح!";
-        statusMsg.style.color = "green";
+        msg.innerHTML = "✔️ تم رفع السيرة الذاتية بنجاح!";
+        msg.style.color = "green";
       } else {
-        statusMsg.innerHTML = "❌ فشل رفع الملف.";
-        statusMsg.style.color = "red";
+        msg.innerHTML = "❌ فشل رفع الملف.";
+        msg.style.color = "red";
       }
     };
 

@@ -48,8 +48,8 @@
         const data = await res.json();
         const jobs = data.jobs || [];
 
-        if (jobs.length === 0) {
-          jobsList.innerHTML = "<p style='text-align:center;color:#ccc;'>🚫 لا توجد وظائف متاحة حالياً</p>";
+        if (!jobs.length) {
+          jobsList.innerHTML = "<p style='text-align:center;color:#ccc;'>🚫 لا توجد وظائف</p>";
           return;
         }
 
@@ -57,8 +57,8 @@
           <div class="job-card">
             <div class="job-title">${job.job_title}</div>
             <div class="company-name">🏢 ${job.company_name}</div>
-            <div class="job-location">📍: ${job.location}</div>
-            <div class="job-salary">💰 الراتب: ${job.salary_range || "غير محدد"}</div>
+            <div>📍 ${job.location}</div>
+            <div>💰 ${job.salary_range || "غير محدد"}</div>
             <p style="color:#eee;">${job.job_description}</p>
 
             <button onclick="applyJob(${job.id})">📄 التقديم على الوظيفة</button>
@@ -70,8 +70,8 @@
       }
     }
 
-    function applyJob(jobId) {
-      window.location.href = `apply.html?job_id=${jobId}`;
+    function applyJob(id) {
+      window.location.href = `apply.html?job_id=${id}`;
     }
 
     fetchJobs();
