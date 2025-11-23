@@ -9,20 +9,46 @@
     body {
       background: #eef1f5;
       font-family: 'Tajawal';
-      margin: 0; padding: 20px;
-      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 🔵 الشريط العلوي */
+    header {
+      background: #007bff;
+      color: white;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+    }
+
+    .logout-btn {
+      background: #dc3545;
+      padding: 8px 15px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      border: none;
+      font-size: 14px;
+    }
+
+    .main-container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
     }
 
     .container {
-      max-width: 900px;
-      margin: auto;
       background: white;
       border-radius: 16px;
       padding: 25px;
+      margin-bottom: 25px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
 
-    h2 { color:#007bff; }
+    h2 { color:#007bff; margin-top:0; }
 
     .card {
       background:#fff;
@@ -33,10 +59,7 @@
       text-align:right;
     }
 
-    .status {
-      font-weight:bold;
-      margin-top:10px;
-    }
+    .status { font-weight:bold; margin-top:10px; }
 
     button {
       padding: 10px 16px;
@@ -51,6 +74,7 @@
     .btn-accept { background:#28a745; color:white; }
     .btn-reject { background:#dc3545; color:white; }
     .btn-interview { background:#007bff; color:white; }
+    .btn-delete { background:#ff4444; color:white; }
 
     button:hover { transform:scale(1.05); }
 
@@ -78,15 +102,31 @@
       margin-bottom:15px;
       border:1px solid #ccc;
     }
-
   </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h2>📬 الطلبات المقدمة</h2>
-  <div id="applicationsList"></div>
+<!-- 🔵 الشريط العلوي -->
+<header>
+  <div id="companyName">اسم الشركة</div>
+  <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+</header>
+
+<div class="main-container">
+
+  <!-- الطلبات -->
+  <div class="container">
+    <h2>📬 الطلبات المقدمة</h2>
+    <div id="applicationsList"></div>
+  </div>
+
+  <!-- الوظائف المرفوعة -->
+  <div class="container">
+    <h2>💼 الوظائف التي قمت برفعها</h2>
+    <div id="companyJobsList"></div>
+  </div>
+
 </div>
 
 <!-- 📅 نافذة تحديد موعد المقابلة -->
@@ -103,13 +143,23 @@
 <script>
   let selectedApplication = null;
 
+  // 📌 استدعاء بيانات الشركة
   const user = JSON.parse(localStorage.getItem("user"));
+
   if (!user || user.user_type !== "company") {
     alert("⚠️ يجب تسجيل الدخول كشركة.");
     location.href = "login.html";
   }
 
-  // تحميل الطلبات
+  document.getElementById("companyName").innerText = user.full_name || user.username;
+
+  // 🔴 تسجيل خروج
+  function logout() {
+    localStorage.removeItem("user");
+    location.href = "login.html";
+  }
+
+  // 📌 تحميل الطلبات
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -138,7 +188,7 @@
     });
   }
 
-  // تحديث الحالة (قبول / رفض)
+  // 📌 تحديث حالة الطلب
   async function updateStatus(id, status) {
     await fetch("/.netlify/functions/update-application-status", {
       method: "POST",
@@ -150,18 +200,17 @@
     loadApplications();
   }
 
-  // فتح نافذة تحديد المقابلة
+  // 📌 فتح نافذة المقابلة
   function openModal(id) {
     selectedApplication = id;
     document.getElementById("interviewModal").style.display = "flex";
   }
 
-  // إغلاق النافذة
   function closeModal() {
     document.getElementById("interviewModal").style.display = "none";
   }
 
-  // حفظ موعد المقابلة
+  // 📌 حفظ موعد المقابلة
   document.getElementById("saveInterviewBtn").addEventListener("click", async () => {
     const date = document.getElementById("interviewDate").value;
 
@@ -185,7 +234,49 @@
     loadApplications();
   });
 
+  // 🔵 تحميل الوظائف الخاصة بالشركة
+  async function loadCompanyJobs() {
+    const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
+    const jobs = await res.json();
+
+    const list = document.getElementById("companyJobsList");
+    list.innerHTML = "";
+
+    if (!jobs.length) {
+      list.innerHTML = "<p>لا توجد وظائف منشورة.</p>";
+      return;
+    }
+
+    jobs.forEach(job => {
+      list.innerHTML += `
+        <div class="card">
+          <strong>${job.job_title}</strong>
+          <div>📍 ${job.location}</div>
+          <div>💰 ${job.salary_range}</div>
+          <br>
+          <button class="btn-delete" onclick="deleteJob(${job.id})">🗑 حذف</button>
+        </div>
+      `;
+    });
+  }
+
+  // ❌ حذف وظيفة
+  async function deleteJob(job_id) {
+    const sure = confirm("هل أنت متأكد من حذف الوظيفة؟");
+    if (!sure) return;
+
+    await fetch("/.netlify/functions/delete-job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id })
+    });
+
+    alert("✔ تم حذف الوظيفة");
+    loadCompanyJobs();
+  }
+
   loadApplications();
+  loadCompanyJobs();
 </script>
 
 </body>
