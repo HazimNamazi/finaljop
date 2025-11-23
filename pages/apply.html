@@ -25,12 +25,14 @@
     }
 
     h2 { color: #007bff; }
+    h3 { margin-bottom: 20px; color: #333; }
+
     input {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       font-size: 16px;
       background: #f8f8f8;
     }
@@ -46,13 +48,20 @@
       font-size: 17px;
       font-weight: bold;
       transition: 0.3s;
+      margin-top: 10px;
     }
 
     button:hover { background: #005ecb; }
 
+    #fileName {
+      margin: 10px 0;
+      font-weight: 600;
+    }
+
     #statusMessage {
       margin-top: 15px;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 17px;
     }
   </style>
 </head>
@@ -61,11 +70,18 @@
 
 <div class="container">
   <h2>📄 التقديم على الوظيفة</h2>
-  <p>قم برفع السيرة الذاتية (PDF)</p>
 
-  <input type="file" id="cvFile" accept="application/pdf">
+  <!-- اسم الوظيفة هنا -->
+  <h3 id="jobTitle">جاري تحميل اسم الوظيفة...</h3>
+
+  <input type="file" id="cvFile" accept="application/pdf" onchange="showSelectedFile()">
+
+  <!-- اسم الملف يظهر هنا -->
+  <p id="fileName"></p>
+
   <button onclick="submitApplication()">إرسال التقديم</button>
 
+  <!-- رسالة النجاح / الفشل -->
   <p id="statusMessage"></p>
 </div>
 
@@ -74,7 +90,9 @@
   const params = new URLSearchParams(window.location.search);
   const jobId = params.get("job_id");
 
-  if (!jobId) console.error("❌ لا يوجد job_id بالرابط");
+  const jobTitleEl = document.getElementById("jobTitle");
+  const fileNameEl = document.getElementById("fileName");
+  const statusMessage = document.getElementById("statusMessage");
 
   // قراءة بيانات المستخدم
   const user = JSON.parse(localStorage.getItem("user"));
@@ -83,13 +101,36 @@
     console.error("❌ لا يوجد بيانات مستخدم في localStorage");
   }
 
+  // 🎯 1) جلب اسم الوظيفة تلقائيًا
+  async function loadJobDetails() {
+    const res = await fetch(`/.netlify/functions/get-job-details?job_id=${jobId}`);
+    const data = await res.json();
+
+    if (data.job_title) {
+      jobTitleEl.innerText = `💼 الوظيفة: ${data.job_title}`;
+    } else {
+      jobTitleEl.innerText = "❌ لم يتم العثور على وظيفة";
+    }
+  }
+
+  loadJobDetails();
+
+  // 🎯 2) عرض اسم الملف عند الاختيار
+  function showSelectedFile() {
+    const file = document.getElementById("cvFile").files[0];
+    if (file) {
+      fileNameEl.innerHTML = `📎 اسم الملف: <strong>${file.name}</strong>`;
+      fileNameEl.style.color = "#333";
+    }
+  }
+
+  // 🎯 3) إرسال التقديم
   async function submitApplication() {
     const file = document.getElementById("cvFile").files[0];
-    const msg = document.getElementById("statusMessage");
 
     if (!file) {
-      msg.innerHTML = "⚠️ الرجاء اختيار ملف PDF.";
-      msg.style.color = "red";
+      statusMessage.innerHTML = "⚠️ الرجاء اختيار ملف PDF.";
+      statusMessage.style.color = "red";
       return;
     }
 
@@ -110,15 +151,15 @@
       });
 
       const data = await res.json();
-
       console.log("Server response:", data);
 
       if (data.success) {
-        msg.innerHTML = "✔️ تم رفع السيرة الذاتية بنجاح!";
-        msg.style.color = "green";
+        statusMessage.innerHTML =
+          "✔️ تم رفع السيرة الذاتية بنجاح!<br><span style='color:#007bff'>شكراً لك، تم إرسال طلبك.</span>";
+        statusMessage.style.color = "green";
       } else {
-        msg.innerHTML = `❌ فشل رفع الملف.<br>${data.error || data.message || ""}`;
-        msg.style.color = "red";
+        statusMessage.innerHTML = `❌ فشل رفع الملف.<br>${data.error || data.message || ""}`;
+        statusMessage.style.color = "red";
       }
     };
 
