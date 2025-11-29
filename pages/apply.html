@@ -63,6 +63,22 @@
       font-weight: 700;
       font-size: 17px;
     }
+
+    /* الصندوق الجديد */
+    #uploadInfo {
+      display: none;
+      background: #f7f9fc;
+      border: 1px solid #cdd6e1;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      text-align: right;
+      font-size: 16px;
+    }
+
+    #uploadInfo p {
+      margin: 6px 0;
+    }
   </style>
 </head>
 
@@ -83,6 +99,14 @@
 
   <!-- رسالة النجاح / الفشل -->
   <p id="statusMessage"></p>
+
+  <!-- 🔥 الصندوق الجديد -->
+  <div id="uploadInfo">
+    <p><strong>اسم الوظيفة:</strong> <span id="displayJobName"></span></p>
+    <p><strong>اسم الملف:</strong> <span id="displayFileName"></span></p>
+    <p><strong>حالة الرفع:</strong> <span id="displayStatus"></span></p>
+  </div>
+
 </div>
 
 <script>
@@ -93,6 +117,11 @@
   const jobTitleEl = document.getElementById("jobTitle");
   const fileNameEl = document.getElementById("fileName");
   const statusMessage = document.getElementById("statusMessage");
+
+  const uploadInfo = document.getElementById("uploadInfo");
+  const displayJobName = document.getElementById("displayJobName");
+  const displayFileName = document.getElementById("displayFileName");
+  const displayStatus = document.getElementById("displayStatus");
 
   // قراءة بيانات المستخدم
   const user = JSON.parse(localStorage.getItem("user"));
@@ -153,11 +182,21 @@
       const data = await res.json();
       console.log("Server response:", data);
 
+      // ---------------------------
+      // 🔥 الصندوق الجديد يظهر هنا
+      // ---------------------------
+      uploadInfo.style.display = "block";
+
+      displayJobName.innerText = jobTitleEl.innerText.replace("💼 الوظيفة: ", "");
+      displayFileName.innerText = file.name;
+
       if (data.success) {
+        displayStatus.innerHTML = "<span style='color:green;font-weight:bold'>✔️ تم الرفع بنجاح</span>";
         statusMessage.innerHTML =
           "✔️ تم رفع السيرة الذاتية بنجاح!<br><span style='color:#007bff'>شكراً لك، تم إرسال طلبك.</span>";
         statusMessage.style.color = "green";
       } else {
+        displayStatus.innerHTML = "<span style='color:red;font-weight:bold'>❌ فشل الرفع</span>";
         statusMessage.innerHTML = `❌ فشل رفع الملف.<br>${data.error || data.message || ""}`;
         statusMessage.style.color = "red";
       }
