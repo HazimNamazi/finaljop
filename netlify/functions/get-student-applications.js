@@ -17,8 +17,9 @@ export async function handler(event) {
       SELECT 
         applications.id,
         applications.status,
-        applications.cv_link,
-        applications.created_at,
+        applications.cv_url,      -- 🔥 تعديل مهم
+        applications.file_name,   -- 🔥 لإظهار اسم الملف
+        applications.applied_at,  -- 🔥 تاريخ التقديم
         jobs.job_title,
         jobs.company_name,
         jobs.location,
@@ -26,7 +27,7 @@ export async function handler(event) {
       FROM applications
       JOIN jobs ON applications.job_id = jobs.id
       WHERE applications.student_id = ${student_id}
-      ORDER BY applications.created_at DESC;
+      ORDER BY applications.applied_at DESC;
     `;
 
     return {
@@ -38,7 +39,7 @@ export async function handler(event) {
     console.error("Error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, message: "Server Error" })
+      body: JSON.stringify({ success: false, message: "Server Error", error: error.message })
     };
   }
 }
