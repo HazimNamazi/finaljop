@@ -13,7 +13,6 @@
       padding: 0;
     }
 
-    /* 🔵 الشريط العلوي */
     header {
       background: #007bff;
       color: white;
@@ -71,6 +70,7 @@
       transition:0.3s;
     }
 
+    .btn-open-cv { background:#6c63ff; color:white; }
     .btn-accept { background:#28a745; color:white; }
     .btn-reject { background:#dc3545; color:white; }
     .btn-interview { background:#007bff; color:white; }
@@ -78,7 +78,6 @@
 
     button:hover { transform:scale(1.05); }
 
-    /* 📄 فورم إضافة وظيفة */
     #addJobForm {
       display:none;
       margin-top:20px;
@@ -105,7 +104,6 @@
       margin-top:10px;
     }
 
-    /* نافذة المقابلة */
     .modal {
       display:none;
       position:fixed;
@@ -148,20 +146,17 @@
     <div id="applicationsList"></div>
   </div>
 
-  <!-- الوظائف المرفوعة -->
+  <!-- الوظائف -->
   <div class="container">
     <h2>💼 الوظائف التي قمت برفعها</h2>
 
     <button class="btn-add" onclick="toggleAddJob()">➕ إضافة وظيفة جديدة</button>
 
-    <!-- فورم إضافة وظيفة داخل نفس الصفحة -->
     <form id="addJobForm">
       <input type="text" id="job_title" placeholder="المسمى الوظيفي" required>
       <input type="text" id="location" placeholder="الموقع">
       <input type="text" id="salary_range" placeholder="الراتب المتوقع">
-
       <textarea id="job_description" placeholder="الوصف الوظيفي..." rows="4" required></textarea>
-
       <button type="button" onclick="submitJob()">✔ إضافة الوظيفة</button>
     </form>
 
@@ -170,7 +165,7 @@
 
 </div>
 
-<!-- 📅 نافذة المقابلة -->
+<!-- نافذة المقابلة -->
 <div class="modal" id="interviewModal">
   <div class="modal-content">
     <h3>🕓 تحديد موعد المقابلة</h3>
@@ -182,9 +177,7 @@
 
 <script>
 
-  /* ========================
-      تحميل بيانات الشركة
-  ======================== */
+  /* بيانات الشركة */
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user || user.user_type !== "company") {
@@ -195,18 +188,14 @@
   document.getElementById("companyName").innerText = user.full_name;
 
 
-  /* ========================
-       تسجيل خروج
-  ======================== */
+  /* تسجيل خروج */
   function logout() {
     localStorage.removeItem("user");
     location.href = "login.html";
   }
 
 
-  /* ========================
-      الطلبات
-  ======================== */
+  /* تحميل الطلبات */
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -225,7 +214,11 @@
           <div><strong>${app.applicant_name}</strong> قدم على وظيفة: ${app.job_title}</div>
           <div>📧 ${app.email}</div>
           <div class="status">الحالة: ${app.status}</div>
-          ${app.cv_link ? `<a href="${app.cv_link}" target="_blank">📄 عرض السيرة الذاتية</a>` : ""}
+
+          ${app.cv_url 
+            ? `<button class="btn-open-cv" onclick="window.open('${app.cv_url}', '_blank')">📄 فتح السيرة الذاتية</button>` 
+            : "<p style='color:red'>❌ لا يوجد ملف سيرة ذاتية</p>"}
+
           <br><br>
           <button class="btn-accept" onclick="updateStatus(${app.id}, 'مقبول')">قبول</button>
           <button class="btn-reject" onclick="updateStatus(${app.id}, 'مرفوض')">رفض</button>
@@ -248,9 +241,7 @@
   }
 
 
-  /* ========================
-        مقابلة
-  ======================== */
+  /* المقابلة */
   function openModal(id) {
     selectedApplication = id;
     document.getElementById("interviewModal").style.display = "flex";
@@ -275,9 +266,7 @@
   });
 
 
-  /* ========================
-     الوظائف الخاصة بك
-  ======================== */
+  /* تحميل وظائف الشركة */
   async function loadCompanyJobs() {
     const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
     const jobs = await res.json();
@@ -302,9 +291,7 @@
   }
 
 
-  /* ========================
-        إضافة وظيفة
-  ======================== */
+  /* إضافة وظيفة */
   function toggleAddJob() {
     const form = document.getElementById("addJobForm");
     form.style.display = form.style.display === "none" ? "block" : "none";
