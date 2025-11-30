@@ -13,7 +13,6 @@
       padding: 0;
     }
 
-    /* 🔵 الشريط العلوي */
     header {
       background: #007bff;
       color: white;
@@ -32,6 +31,18 @@
       cursor: pointer;
       border: none;
       font-size: 14px;
+    }
+
+    .add-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      float: left;
+      margin-top: -45px;
+      font-weight: bold;
     }
 
     .main-container {
@@ -61,20 +72,9 @@
 
     .status { font-weight:bold; margin-top:10px; }
 
-    button {
-      padding: 10px 16px;
-      border:none;
-      border-radius:8px;
-      cursor:pointer;
-      font-size:15px;
-      margin-left:7px;
-      transition:0.3s;
-    }
-
     .btn-accept { background:#28a745; color:white; }
     .btn-reject { background:#dc3545; color:white; }
     .btn-interview { background:#007bff; color:white; }
-    .btn-delete { background:#ff4444; color:white; }
 
     button:hover { transform:scale(1.05); }
 
@@ -107,7 +107,6 @@
 
 <body>
 
-<!-- 🔵 الشريط العلوي -->
 <header>
   <div id="companyName">اسم الشركة</div>
   <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
@@ -115,21 +114,22 @@
 
 <div class="main-container">
 
-  <!-- الطلبات -->
   <div class="container">
     <h2>📬 الطلبات المقدمة</h2>
     <div id="applicationsList"></div>
   </div>
 
-  <!-- الوظائف المرفوعة -->
+  <!-- 🌟 إضافة زر الوظيفة + -->
   <div class="container">
     <h2>💼 الوظائف التي قمت برفعها</h2>
-    <div id="companyJobsList"></div>
+
+    <button class="add-btn" onclick="addJob()">➕ إضافة وظيفة</button>
+
+    <div id="companyJobsList" style="margin-top:50px;"></div>
   </div>
 
 </div>
 
-<!-- 📅 نافذة تحديد موعد المقابلة -->
 <div class="modal" id="interviewModal">
   <div class="modal-content">
     <h3>🕓 تحديد موعد المقابلة</h3>
@@ -143,7 +143,6 @@
 <script>
   let selectedApplication = null;
 
-  // 📌 استدعاء بيانات الشركة
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user || user.user_type !== "company") {
@@ -153,13 +152,11 @@
 
   document.getElementById("companyName").innerText = user.full_name || user.username;
 
-  // 🔴 تسجيل خروج
   function logout() {
     localStorage.removeItem("user");
     location.href = "login.html";
   }
 
-  // 📌 تحميل الطلبات
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -178,7 +175,9 @@
           <div><strong>${app.applicant_name}</strong> قدم على وظيفة: ${app.job_title}</div>
           <div>📧 ${app.email}</div>
           <div class="status">الحالة: ${app.status}</div>
-          ${app.cv_link ? `<a href="${app.cv_link}" target="_blank">📄 عرض السيرة الذاتية</a>` : ""}
+
+          ${app.cv_url ? `<a href="${app.cv_url}" target="_blank">📄 عرض السيرة الذاتية</a>` : ""}
+
           <br><br>
           <button class="btn-accept" onclick="updateStatus(${app.id}, 'مقبول')">قبول</button>
           <button class="btn-reject" onclick="updateStatus(${app.id}, 'مرفوض')">رفض</button>
@@ -188,7 +187,6 @@
     });
   }
 
-  // 📌 تحديث حالة الطلب
   async function updateStatus(id, status) {
     await fetch("/.netlify/functions/update-application-status", {
       method: "POST",
@@ -200,7 +198,6 @@
     loadApplications();
   }
 
-  // 📌 فتح نافذة المقابلة
   function openModal(id) {
     selectedApplication = id;
     document.getElementById("interviewModal").style.display = "flex";
@@ -210,7 +207,6 @@
     document.getElementById("interviewModal").style.display = "none";
   }
 
-  // 📌 حفظ موعد المقابلة
   document.getElementById("saveInterviewBtn").addEventListener("click", async () => {
     const date = document.getElementById("interviewDate").value;
 
@@ -234,7 +230,6 @@
     loadApplications();
   });
 
-  // 🔵 تحميل الوظائف الخاصة بالشركة
   async function loadCompanyJobs() {
     const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
     const jobs = await res.json();
@@ -253,26 +248,13 @@
           <strong>${job.job_title}</strong>
           <div>📍 ${job.location}</div>
           <div>💰 ${job.salary_range}</div>
-          <br>
-          <button class="btn-delete" onclick="deleteJob(${job.id})">🗑 حذف</button>
         </div>
       `;
     });
   }
 
-  // ❌ حذف وظيفة
-  async function deleteJob(job_id) {
-    const sure = confirm("هل أنت متأكد من حذف الوظيفة؟");
-    if (!sure) return;
-
-    await fetch("/.netlify/functions/delete-job", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ job_id })
-    });
-
-    alert("✔ تم حذف الوظيفة");
-    loadCompanyJobs();
+  function addJob() {
+    window.location.href = "add-job.html"; // قم بإنشاء صفحة add-job لاحقًا
   }
 
   loadApplications();
