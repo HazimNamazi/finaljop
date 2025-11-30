@@ -76,8 +76,6 @@
     .btn-interview { background:#007bff; color:white; }
     .btn-add { background:#007bff; color:white; width:100%; margin-top:15px; }
 
-    button:hover { transform:scale(1.05); }
-
     #addJobForm {
       display:none;
       margin-top:20px;
@@ -177,7 +175,6 @@
 
 <script>
 
-  /* بيانات الشركة */
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user || user.user_type !== "company") {
@@ -187,15 +184,14 @@
 
   document.getElementById("companyName").innerText = user.full_name;
 
-
-  /* تسجيل خروج */
   function logout() {
     localStorage.removeItem("user");
     location.href = "login.html";
   }
 
-
-  /* تحميل الطلبات */
+  /* ========================
+      تحميل الطلبات
+  ======================== */
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -213,13 +209,17 @@
         <div class="card">
           <div><strong>${app.applicant_name}</strong> قدم على وظيفة: ${app.job_title}</div>
           <div>📧 ${app.email}</div>
+
           <div class="status">الحالة: ${app.status}</div>
 
-          ${app.cv_url 
-            ? `<button class="btn-open-cv" onclick="window.open('${app.cv_url}', '_blank')">📄 فتح السيرة الذاتية</button>` 
-            : "<p style='color:red'>❌ لا يوجد ملف سيرة ذاتية</p>"}
+          ${
+            app.cv_url
+              ? `<button class="btn-open-cv" onclick="window.open('${app.cv_url}', '_blank')">📄 فتح السيرة الذاتية</button>`
+              : "<p style='color:red'>❌ لا يوجد ملف سيرة ذاتية</p>"
+          }
 
           <br><br>
+
           <button class="btn-accept" onclick="updateStatus(${app.id}, 'مقبول')">قبول</button>
           <button class="btn-reject" onclick="updateStatus(${app.id}, 'مرفوض')">رفض</button>
           <button class="btn-interview" onclick="openModal(${app.id})">📅 مقابلة</button>
@@ -227,7 +227,6 @@
       `;
     });
   }
-
 
   async function updateStatus(id, status) {
     await fetch("/.netlify/functions/update-application-status", {
@@ -240,8 +239,9 @@
     loadApplications();
   }
 
-
-  /* المقابلة */
+  /* ========================
+      المقابلات
+  ======================== */
   function openModal(id) {
     selectedApplication = id;
     document.getElementById("interviewModal").style.display = "flex";
@@ -265,8 +265,9 @@
     loadApplications();
   });
 
-
-  /* تحميل وظائف الشركة */
+  /* ========================
+      وظائف الشركة
+  ======================== */
   async function loadCompanyJobs() {
     const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
     const jobs = await res.json();
@@ -290,8 +291,9 @@
     });
   }
 
-
-  /* إضافة وظيفة */
+  /* ========================
+      إضافة وظيفة جديدة
+  ======================== */
   function toggleAddJob() {
     const form = document.getElementById("addJobForm");
     form.style.display = form.style.display === "none" ? "block" : "none";
@@ -322,7 +324,6 @@
       alert("❌ فشل الإضافة: " + result.message);
     }
   }
-
 
   loadApplications();
   loadCompanyJobs();
