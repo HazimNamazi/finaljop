@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>عرض السيرة الذاتية</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f0f2f5;
+      font-family: 'Tajawal', sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: #007bff;
+      color: white;
+      padding: 12px 20px;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+    }
+
+    .error {
+      padding: 30px;
+      text-align: center;
+      color: red;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>📄 عرض السيرة الذاتية</header>
+
+<div id="content"></div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const file = params.get("file");
+  const contentDiv = document.getElementById("content");
+
+  if (!file) {
+    contentDiv.innerHTML = "<p class='error'>❌ لا يوجد ملف للعرض</p>";
+  } else {
+    contentDiv.innerHTML = `<iframe src="${file}"></iframe>`;
+  }
+</script>
+
+</body>
+</html>
