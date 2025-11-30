@@ -109,13 +109,13 @@
   // قراءة بيانات المستخدم
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // 🔥 التحقق من أن المستخدم طالب
-  if (!user || !user.id || user.user_type !== "student") {
+  // 🔥 التحقق الصحيح حسب قاعدة البيانات (job_seeker)
+  if (!user || !user.id || user.user_type !== "job_seeker") {
     alert("⚠️ يجب تسجيل الدخول كطالب.");
     window.location.href = "/pages/login.html";
   }
 
-  // قراءة job_id من الرابط
+  // قراءة job_id
   const params = new URLSearchParams(window.location.search);
   const jobId = params.get("job_id");
 
@@ -128,7 +128,7 @@
   const displayFileName = document.getElementById("displayFileName");
   const displayStatus = document.getElementById("displayStatus");
 
-  // 🎯 1) جلب بيانات الوظيفة
+  // 🎯 جلب بيانات الوظيفة
   async function loadJobDetails() {
     const res = await fetch(`/.netlify/functions/get-job-details?job_id=${jobId}`);
     const data = await res.json();
@@ -139,9 +139,10 @@
       jobTitleEl.innerText = "❌ لم يتم العثور على وظيفة";
     }
   }
+
   loadJobDetails();
 
-  // 🎯 2) عرض اسم الملف عند الاختيار
+  // 🎯 عرض اسم الملف
   function showSelectedFile() {
     const file = document.getElementById("cvFile").files[0];
     if (file) {
@@ -150,7 +151,7 @@
     }
   }
 
-  // 🎯 3) رفع السيرة الذاتية
+  // 🎯 رفع السيرة الذاتية
   async function submitApplication() {
     const file = document.getElementById("cvFile").files[0];
 
@@ -161,6 +162,7 @@
     }
 
     const reader = new FileReader();
+
     reader.onload = async function () {
       const base64File = reader.result.split(",")[1];
 
@@ -169,7 +171,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           job_id: jobId,
-          student_id: user.id,
+          student_id: user.id,  // لا تغيّرها حتى لو المستخدم job_seeker
           fileName: file.name,
           fileContent: base64File
         })
@@ -178,7 +180,6 @@
       const data = await res.json();
 
       uploadInfo.style.display = "block";
-
       displayJobName.innerText = jobTitleEl.innerText.replace("💼 الوظيفة: ", "");
       displayFileName.innerText = file.name;
 
@@ -188,7 +189,6 @@
           "✔️ تم رفع السيرة الذاتية بنجاح!<br><span style='color:#007bff'>جاري تحويلك إلى صفحة طلباتك...</span>";
         statusMessage.style.color = "green";
 
-        // 🔥 التحويل بعد نجاح الرفع
         setTimeout(() => {
           window.location.href = "/pages/student-applications.html";
         }, 1500);
@@ -203,6 +203,7 @@
     reader.readAsDataURL(file);
   }
 </script>
+
 
 </body>
 </html>
