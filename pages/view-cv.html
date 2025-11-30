@@ -1,58 +1,42 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>عرض السيرة الذاتية</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-
   <style>
     body {
-      font-family: 'Tajawal', sans-serif;
+      background: #f2f2f2;
       margin: 0;
-      background: #f3f5f7;
-    }
-
-    header {
-      background: #007bff;
-      color: white;
-      padding: 15px;
+      padding: 0;
       text-align: center;
-      font-size: 20px;
-      font-weight: bold;
+      font-family: "Tajawal";
     }
-
     iframe {
       width: 100%;
-      height: 90vh;
+      height: 100vh;
       border: none;
     }
-
     .error {
-      text-align: center;
+      padding: 20px;
       margin-top: 40px;
       font-size: 20px;
       color: red;
+      font-weight: bold;
     }
   </style>
 </head>
-
 <body>
-
-<header>📄 عرض السيرة الذاتية</header>
-
-<div id="viewer"></div>
 
 <script>
   const params = new URLSearchParams(window.location.search);
-  const fileURL = params.get("file");
+  const fileUrl = params.get("file");
 
-  if (!fileURL) {
-    document.getElementById("viewer").innerHTML =
-      "<p class='error'>❌ لا يوجد ملف لعرضه.</p>";
+  if (!fileUrl) {
+    document.body.innerHTML =
+      "<div class='error'>❌ لا يوجد ملف لعرضه</div>";
   } else {
-    document.getElementById("viewer").innerHTML = `
-      <iframe src="${decodeURIComponent(fileURL)}"></iframe>
-    `;
+    // فتح ملف Cloudinary الحقيقي
+    document.write(`<iframe src="${fileUrl}"></iframe>`);
   }
 </script>
 
