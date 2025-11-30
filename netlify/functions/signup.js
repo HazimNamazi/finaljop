@@ -75,17 +75,3 @@ export async function handler(event) {
     };
   }
 }
-if (res.status === 200) {
-  showAlert(result.message, true);
-
-  // 👇 حفظ بيانات المستخدم قبل التحويل
-  localStorage.setItem("user", JSON.stringify(result.user));
-
-  setTimeout(() => {
-    if (result.user.user_type === "company") {
-      window.location.href = "/pages/company-dashboard.html";
-    } else {
-      window.location.href = "/pages/jobs.html";
-    }
-  }, 1200);
-}
