@@ -3,30 +3,36 @@ import { neon } from "@neondatabase/serverless";
 export async function handler(event) {
   try {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
+    const { job_id, student_id, fileName, fileContent } = JSON.parse(event.body);
 
-    const data = JSON.parse(event.body);
-
-    const { job_id, student_id, fileName, fileContent } = data;
-
-    if (!job_id || !student_id || !fileName || !fileContent) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          success: false,
-          message: "Missing required fields"
-        })
-      };
+    if (!fileContent) {
+      return { statusCode: 400, body: JSON.stringify({ success: false, message: "No file uploaded" }) };
     }
 
-    // 🔥 رفع الملف إلى cloudinary (أو تخزينه Base64 في DB — اختيارك)
-    // هنا سنحفظ Base64 مباشرة داخل DB في عمود cv_url
+    // ⬆️ رفع الملف إلى Cloudinary
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const preset = process.env.CLOUDINARY_UPLOAD_PRESET;
 
-    const fileUrl = `data:application/pdf;base64,${fileContent}`;
+    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, {
+      method: "POST",
+      body: JSON.stringify({
+        file: `data:application/pdf;base64,${fileContent}`,
+        upload_preset: preset,
+        public_id: `cv_${Date.now()}`,
+      }),
+      headers: { "Content-Type": "application/json" }
+    });
 
-    // 🟢 إدخال الطلب
-    const insert = await sql`
-      INSERT INTO applications (student_id, job_id, cv_url, file_name)
-      VALUES (${student_id}, ${job_id}, ${fileUrl}, ${fileName})
+    const uploaded = await uploadRes.json();
+
+    if (!uploaded.secure_url) {
+      return { statusCode: 500, body: JSON.stringify({ success: false, message: "Cloudinary upload failed" }) };
+    }
+
+    // ⬇️ تخزين الطلب في قاعدة البيانات
+    const result = await sql`
+      INSERT INTO applications (job_id, student_id, cv_url, file_name)
+      VALUES (${job_id}, ${student_id}, ${uploaded.secure_url}, ${fileName})
       RETURNING id;
     `;
 
@@ -34,18 +40,12 @@ export async function handler(event) {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
-        message: "تم رفع الملف بنجاح",
-        application_id: insert[0].id
+        application_id: result[0].id,
+        cv_url: uploaded.secure_url
       })
     };
 
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        success: false,
-        message: error.message
-      })
-    };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ success:false, error: err.message }) };
   }
 }
