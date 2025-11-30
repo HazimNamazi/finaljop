@@ -20,12 +20,12 @@ export async function handler(event) {
         applications.cv_url,
         applications.file_name,
         applications.applied_at,
-        students.full_name AS applicant_name,
-        students.email AS email,
+        users.full_name AS applicant_name,
+        users.email AS email,
         jobs.job_title
       FROM applications
       JOIN jobs ON applications.job_id = jobs.id
-      JOIN students ON applications.student_id = students.id
+      JOIN users ON applications.student_id = users.id   -- 🔥 التعديل هنا
       WHERE jobs.company_id = ${company_id}
       ORDER BY applications.applied_at DESC;
     `;
