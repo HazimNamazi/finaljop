@@ -13,27 +13,26 @@ export async function handler(event) {
       };
     }
 
-    const apps = await sql`
+    const result = await sql`
       SELECT 
         applications.id,
         applications.status,
-        applications.cv_url,        -- ✔ العمود الصحيح
-        applications.file_name,     -- ✔ اسم الملف
-        applications.interview_date,
+        applications.cv_url,
+        applications.file_name,
         applications.applied_at,
         students.full_name AS applicant_name,
-        students.email,
+        students.email AS email,
         jobs.job_title
       FROM applications
-      JOIN students ON students.id = applications.student_id
-      JOIN jobs ON jobs.id = applications.job_id
+      JOIN jobs ON applications.job_id = jobs.id
+      JOIN students ON applications.student_id = students.id
       WHERE jobs.company_id = ${company_id}
       ORDER BY applications.applied_at DESC;
     `;
 
     return {
       statusCode: 200,
-      body: JSON.stringify(apps)
+      body: JSON.stringify(result)
     };
 
   } catch (err) {
