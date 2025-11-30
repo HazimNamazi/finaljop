@@ -96,10 +96,11 @@
 // 🔐 التحقق من تسجيل دخول الطالب
 // ===============================
 const user = JSON.parse(localStorage.getItem("user"));
-if (!user || user.user_type !== "student") {
+if (!user || !user.id || (user.user_type !== "student" && user.user_type !== "job_seeker")) {
   alert("⚠️ يجب تسجيل الدخول كطالب.");
-  location.href = "login.html";
+  window.location.href = "/pages/login.html";
 }
+
 
 // ===============================
 // 📌 تحميل الطلبات
