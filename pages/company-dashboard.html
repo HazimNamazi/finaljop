@@ -138,13 +138,11 @@
 
 <div class="main-container">
 
-  <!-- الطلبات -->
   <div class="container">
     <h2>📬 الطلبات المقدمة</h2>
     <div id="applicationsList"></div>
   </div>
 
-  <!-- الوظائف -->
   <div class="container">
     <h2>💼 الوظائف التي قمت برفعها</h2>
 
@@ -163,7 +161,6 @@
 
 </div>
 
-<!-- نافذة المقابلة -->
 <div class="modal" id="interviewModal">
   <div class="modal-content">
     <h3>🕓 تحديد موعد المقابلة</h3>
@@ -189,9 +186,6 @@
     location.href = "login.html";
   }
 
-  /* ========================
-      تحميل الطلبات
-  ======================== */
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -214,8 +208,8 @@
 
           ${
             app.cv_url
-              ? `<button class="btn-open-cv" onclick="window.open('${app.cv_url}', '_blank')">📄 فتح السيرة الذاتية</button>`
-              : "<p style='color:red'>❌ لا يوجد ملف سيرة ذاتية</p>"
+              ? `<button class="btn-open-cv" onclick="window.location.href='view-cv.html?file=${encodeURIComponent(app.cv_url)}'">📄 عرض السيرة الذاتية</button>`
+              : "<p style='color:red'>❌ لا يوجد سيرة ذاتية</p>"
           }
 
           <br><br>
@@ -239,9 +233,6 @@
     loadApplications();
   }
 
-  /* ========================
-      المقابلات
-  ======================== */
   function openModal(id) {
     selectedApplication = id;
     document.getElementById("interviewModal").style.display = "flex";
@@ -261,13 +252,9 @@
     });
 
     closeModal();
-    alert("✔ تم تحديد الموعد");
     loadApplications();
   });
 
-  /* ========================
-      وظائف الشركة
-  ======================== */
   async function loadCompanyJobs() {
     const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
     const jobs = await res.json();
@@ -291,9 +278,6 @@
     });
   }
 
-  /* ========================
-      إضافة وظيفة جديدة
-  ======================== */
   function toggleAddJob() {
     const form = document.getElementById("addJobForm");
     form.style.display = form.style.display === "none" ? "block" : "none";
@@ -314,14 +298,13 @@
       body: JSON.stringify(body)
     });
 
-    const result = await res.json();
-
     if (res.ok) {
       alert("✔ تم إضافة الوظيفة بنجاح");
       document.getElementById("addJobForm").reset();
       loadCompanyJobs();
     } else {
-      alert("❌ فشل الإضافة: " + result.message);
+      const data = await res.json();
+      alert("❌ فشل الإضافة: " + data.message);
     }
   }
 
