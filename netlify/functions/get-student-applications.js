@@ -9,7 +9,7 @@ export async function handler(event) {
     if (!student_id) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ success: false, message: "student_id is required" })
+        body: JSON.stringify({ error: "student_id is required" })
       };
     }
 
@@ -17,9 +17,10 @@ export async function handler(event) {
       SELECT 
         applications.id,
         applications.status,
-        applications.cv_url,      -- 🔥 تعديل مهم
-        applications.file_name,   -- 🔥 لإظهار اسم الملف
-        applications.applied_at,  -- 🔥 تاريخ التقديم
+        applications.cv_url,
+        applications.file_name,
+        applications.applied_at,
+        applications.interview_date,
         jobs.job_title,
         jobs.company_name,
         jobs.location,
@@ -32,14 +33,13 @@ export async function handler(event) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, applications })
+      body: JSON.stringify({ applications })
     };
 
   } catch (error) {
-    console.error("Error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, message: "Server Error", error: error.message })
+      body: JSON.stringify({ error: error.message })
     };
   }
 }
