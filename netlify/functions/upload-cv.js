@@ -17,44 +17,30 @@ export async function handler(event) {
       };
     }
 
-    // 1️⃣ جلب company_id من الوظيفة
-    const jobInfo = await sql`
-      SELECT company_id FROM jobs WHERE id = ${job_id}
-    `;
-
-    if (!jobInfo.length) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ success: false, message: "Job not found" })
-      };
-    }
-
-    const company_id = jobInfo[0].company_id;
-
-    // 2️⃣ تحويل ملف PDF إلى Base64 URL
+    // رابط السيرة الذاتية Base64
     const pdf_url = `data:application/pdf;base64,${fileContent}`;
 
-    // 3️⃣ إدخال الطلب في جدول applications
+    // ⭐ إنشاء طلب الوظيفة + تخزين الرابط
     const result = await sql`
-      INSERT INTO applications (job_id, student_id, company_id, file_name, cv_url, status)
-      VALUES (${job_id}, ${student_id}, ${company_id}, ${fileName}, ${pdf_url}, 'new')
+      INSERT INTO applications (job_id, student_id, cv_link, status)
+      VALUES (${job_id}, ${student_id}, ${pdf_url}, 'قيد المراجعة')
       RETURNING *;
     `;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, data: result }),
+      body: JSON.stringify({
+        success: true,
+        message: "Application submitted",
+        application: result
+      }),
     };
 
   } catch (err) {
     console.error("❌ upload-cv error:", err);
-
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        success: false,
-        error: err.message || "Unknown server error"
-      })
+      body: JSON.stringify({ success: false, error: err.message }),
     };
   }
 }
