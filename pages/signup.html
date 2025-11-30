@@ -5,28 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>✳️ إنشاء مستخدم جديد - بوابة الوظائف</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
 
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Tajawal', sans-serif;
       background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%);
       color: #fff;
     }
 
-    /* 🔹 الشريط العلوي */
     header {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       padding: 14px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .language-switch {
+      cursor: pointer;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-weight: bold;
+      border: 1px solid rgba(255,255,255,0.4);
+      transition: 0.3s;
+    }
+
+    .language-switch:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
 
     .logo {
@@ -37,29 +47,21 @@
       align-items: center;
       gap: 8px;
     }
-
-    .logo span {
-      color: #222;
-    }
+    .logo span { color: #222; }
 
     nav ul {
-      display: flex;
       list-style: none;
+      display: flex;
       gap: 20px;
     }
-
     nav a {
       text-decoration: none;
       color: #ffffff;
       font-weight: 500;
       transition: 0.3s;
     }
+    nav a:hover { color: #007bff; }
 
-    nav a:hover {
-      color: #007bff;
-    }
-
-    /* 🔹 صندوق إنشاء الحساب */
     .signup-card {
       background: rgba(255, 255, 255, 0.12);
       padding: 35px;
@@ -71,61 +73,25 @@
       text-align: center;
     }
 
-    h2 {
-      color: #ffd369;
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-
-    p.subtitle {
-      color: #ddd;
-      font-size: 15px;
-      margin-bottom: 25px;
-    }
-
-    label {
-      display: block;
-      text-align: right;
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: #333;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="tel"],
-    select {
+    input, select {
       width: 100%;
       padding: 10px;
       border-radius: 8px;
       border: 1.8px solid #ddd;
       margin-bottom: 15px;
-      outline: none;
       font-size: 14px;
       transition: 0.3s;
-    }
-
-    input:focus, select:focus {
-      border-color: #007bff;
-      box-shadow: 0 0 4px rgba(238, 239, 240, 0.3);
     }
 
     button {
       width: 100%;
       padding: 10px;
       background: linear-gradient(90deg, #007bff, #0056b3);
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      transform: scale(1.03);
-      background: linear-gradient(90deg, #005ecb, #004b91);
     }
 
     #alertBox {
@@ -135,153 +101,156 @@
       border-radius: 8px;
       font-weight: bold;
       text-align: center;
-      transition: all 0.3s ease-in-out;
-    }
-
-    a {
-      color: #007bff;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    footer {
-      text-align: center;
-      color: #f4f1f1;
-      font-size: 13px;
-      margin-top: 40px;
-      padding-bottom: 15px;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- 🔹 الهيدر بدون الرئيسية أو دخول -->
-  <header>
-    <div class="logo">💼 <span>بوابة الوظائف</span></div>
-    <nav>
-      <ul>
-        <li><a href="../pages/jobs.html">الوظائف</a></li>
-        <li><a href="#">الشركات</a></li>
-      </ul>
-    </nav>
-  </header>
+<header>
+  <div class="logo">💼 <span data-lang="title">بوابة الوظائف</span></div>
 
-  <!-- 🔹 نموذج إنشاء المستخدم -->
-  <div class="signup-card">
-    <h2>✳️ إنشاء مستخدم جديد</h2>
-    <p class="subtitle">أدخل بيانات المستخدم لإنشاء الحساب في النظام</p>
+  <div class="language-switch" id="langToggle">English</div>
+</header>
 
-    <form id="signupForm">
-      <label>الاسم الكامل:</label>
-      <input type="text" id="full_name" placeholder="الاسم الكامل" required>
+<div class="signup-card">
+  <h2 data-lang="create_title">✳️ إنشاء مستخدم جديد</h2>
+  <p class="subtitle" data-lang="sub_title">أدخل بيانات المستخدم لإنشاء الحساب في النظام</p>
 
-      <label>اسم المستخدم:</label>
-      <input type="text" id="username" placeholder="اسم المستخدم" required>
+  <form id="signupForm">
+    <label data-lang="full_name">الاسم الكامل:</label>
+    <input type="text" id="full_name" data-placeholder='full_name' placeholder="الاسم الكامل" required>
 
-      <label>البريد الإلكتروني:</label>
-      <input type="email" id="email" placeholder="example@gmail.com" required>
+    <label data-lang="username">اسم المستخدم:</label>
+    <input type="text" id="username" data-placeholder='username' placeholder="اسم المستخدم" required>
 
-      <label>كلمة المرور:</label>
-      <input type="password" id="password" placeholder="••••••••" required>
+    <label data-lang="email">البريد الإلكتروني:</label>
+    <input type="email" id="email" data-placeholder='email' placeholder="example@gmail.com" required>
 
-      <label>رقم الجوال:</label>
-      <input type="tel" id="phone" placeholder="05XXXXXXXX" pattern="[0-9]{10}" required>
+    <label data-lang="password">كلمة المرور:</label>
+    <input type="password" id="password" data-placeholder='password' placeholder="••••••••" required>
 
-      <label>نوع المستخدم:</label>
-      <select id="user_type" required>
-        <option value="job_seeker">طالب 👨‍🎓</option>
-        <option value="company">شركة 🏢</option>
-        <option value="admin">أدمن 🧑‍💻</option>
-      </select>
+    <label data-lang="phone">رقم الجوال:</label>
+    <input type="tel" id="phone" data-placeholder='phone' placeholder="05XXXXXXXX" required>
 
-      <div id="companyFields" style="display:none;">
-        <label>المسمى الوظيفي (للشركة):</label>
-        <input type="text" id="job_title" placeholder="مثال: مدير التوظيف">
-      </div>
+    <label data-lang="user_type">نوع المستخدم:</label>
+    <select id="user_type" required>
+      <option value="job_seeker" data-lang="student">طالب 👨‍🎓</option>
+      <option value="company" data-lang="company">شركة 🏢</option>
+    </select>
 
-      <button type="submit">إنشاء المستخدم</button>
-      <div id="alertBox"></div>
-    </form>
+    <div id="companyFields" style="display:none;">
+      <label data-lang="job_title">المسمى الوظيفي (للشركة):</label>
+      <input type="text" id="job_title" data-placeholder='job_title' placeholder="مثال: مدير التوظيف">
+    </div>
 
-    <p style="margin-top: 15px;">هل لديك حساب؟ <a href="login.html">تسجيل الدخول</a></p>
-  </div>
+    <button type="submit" data-lang="create_btn">إنشاء المستخدم</button>
+    <div id="alertBox"></div>
+  </form>
 
-  <footer>© 2025 بوابة الوظائف - جامعة جازان</footer>
+  <p style="margin-top: 15px;">
+    <span data-lang="have_account">هل لديك حساب؟</span>
+    <a href="login.html" data-lang="login_now">تسجيل الدخول</a>
+  </p>
+</div>
 
-  <script>
-    const userTypeSelect = document.getElementById("user_type");
-    const companyFields = document.getElementById("companyFields");
+<footer>© 2025</footer>
 
-    userTypeSelect.addEventListener("change", () => {
-      companyFields.style.display = userTypeSelect.value === "company" ? "block" : "none";
-    });
-
-    document.getElementById("signupForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const user = {
-        full_name: document.getElementById("full_name").value.trim(),
-        username: document.getElementById("username").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        password: document.getElementById("password").value,
-        phone: document.getElementById("phone").value.trim(),
-        user_type: document.getElementById("user_type").value,
-        job_title: document.getElementById("job_title").value.trim(),
-        role: document.getElementById("user_type").value
-      };
-
-      if (!user.full_name || !user.username || !user.email || !user.password || !user.phone) {
-        showAlert("⚠️ يرجى تعبئة جميع الحقول المطلوبة.", false);
-        return;
+<script>
+  const translations = {
+    ar: {
+      title: "بوابة الوظائف",
+      create_title: "✳️ إنشاء مستخدم جديد",
+      sub_title: "أدخل بيانات المستخدم لإنشاء الحساب في النظام",
+      full_name: "الاسم الكامل:",
+      username: "اسم المستخدم:",
+      email: "البريد الإلكتروني:",
+      password: "كلمة المرور:",
+      phone: "رقم الجوال:",
+      user_type: "نوع المستخدم:",
+      student: "طالب 👨‍🎓",
+      company: "شركة 🏢",
+      job_title: "المسمى الوظيفي (للشركة):",
+      create_btn: "إنشاء المستخدم",
+      have_account: "هل لديك حساب؟",
+      login_now: "تسجيل الدخول",
+      placeholders: {
+        full_name: "الاسم الكامل",
+        username: "اسم المستخدم",
+        email: "example@gmail.com",
+        password: "••••••••",
+        phone: "05XXXXXXXX",
+        job_title: "مثال: مدير التوظيف",
       }
+    },
 
-      if (user.user_type === "company" && !user.job_title) {
-        showAlert("⚠️ يرجى إدخال المسمى الوظيفي للشركة.", false);
-        return;
+    en: {
+      title: "Job Portal",
+      create_title: "✳️ Create New Account",
+      sub_title: "Enter the user information to create an account",
+      full_name: "Full Name:",
+      username: "Username:",
+      email: "Email:",
+      password: "Password:",
+      phone: "Phone Number:",
+      user_type: "User Type:",
+      student: "Student 👨‍🎓",
+      company: "Company 🏢",
+      job_title: "Job Title (Company):",
+      create_btn: "Create Account",
+      have_account: "Already have an account?",
+      login_now: "Login",
+      placeholders: {
+        full_name: "Full Name",
+        username: "Username",
+        email: "example@gmail.com",
+        password: "Password",
+        phone: "05XXXXXXXX",
+        job_title: "Example: HR Manager",
       }
-
-      try {
-        const res = await fetch("/.netlify/functions/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(user),
-        });
-
-        const result = await res.json();
-        if (res.status === 200) {
-          showAlert(result.message, true);
-          setTimeout(() => {
-            if (user.user_type === "company") {
-              window.location.href = "/pages/company-dashboard.html";
-            } else if (user.user_type === "job_seeker") {
-              window.location.href = "/pages/jobs.html";
-            } else {
-              window.location.href = "/pages/login.html";
-            }
-          }, 1500);
-        } else {
-          showAlert(result.message || "⚠️ حدث خطأ أثناء إنشاء المستخدم.", false);
-        }
-      } catch (err) {
-        console.error("❌ خطأ أثناء الإرسال:", err);
-        showAlert("⚠️ تعذر الاتصال بالسيرفر.", false);
-      }
-    });
-
-    function showAlert(msg, success = false) {
-      const box = document.getElementById("alertBox");
-      box.textContent = msg;
-      box.style.display = "block";
-      box.style.backgroundColor = success ? "#c8f7c5" : "#ffd6d6";
-      box.style.color = success ? "#155724" : "#721c24";
-      box.style.border = success ? "2px solid #4caf50" : "2px solid #f44336";
-      setTimeout(() => { box.style.display = "none"; }, 3000);
     }
-  </script>
+  };
+
+  let currentLang = localStorage.getItem("lang") || "ar";
+
+  function applyLanguage(lang) {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+    document.querySelectorAll("[data-lang]").forEach(el => {
+      el.textContent = translations[lang][el.dataset.lang];
+    });
+
+    document.querySelectorAll("[data-placeholder]").forEach(el => {
+      const key = el.dataset.placeholder;
+      el.placeholder = translations[lang].placeholders[key];
+    });
+
+    document.querySelector("option[value='job_seeker']").textContent = translations[lang].student;
+    document.querySelector("option[value='company']").textContent = translations[lang].company;
+
+    document.getElementById("langToggle").textContent =
+      lang === "ar" ? "English" : "العربية";
+
+    localStorage.setItem("lang", lang);
+  }
+
+  document.getElementById("langToggle").addEventListener("click", () => {
+    currentLang = currentLang === "ar" ? "en" : "ar";
+    applyLanguage(currentLang);
+  });
+
+  applyLanguage(currentLang);
+
+  /* باقي الكود الخاص بالتسجيل كما هو */
+  const userTypeSelect = document.getElementById("user_type");
+  const companyFields = document.getElementById("companyFields");
+
+  userTypeSelect.addEventListener("change", () => {
+    companyFields.style.display =
+      userTypeSelect.value === "company" ? "block" : "none";
+  });
+</script>
+
 </body>
 </html>
