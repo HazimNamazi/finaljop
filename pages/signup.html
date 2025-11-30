@@ -131,7 +131,7 @@
 
 <body>
 
-  <!-- 🔹 الهيدر بدون كلمة الشركات -->
+  <!-- 🔹 الهيدر -->
   <header>
     <div class="logo">💼 بوابة الوظائف</div>
     <nav>
@@ -225,6 +225,9 @@
 
         if (res.status === 200) {
           showAlert(result.message, true);
+
+          // ⭐ مهم جداً — حفظ بيانات المستخدم
+          localStorage.setItem("user", JSON.stringify(result.user));
 
           setTimeout(() => {
             if (result.user.user_type === "company") {
