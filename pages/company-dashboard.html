@@ -13,6 +13,7 @@
       padding: 0;
     }
 
+    /* 🔵 الشريط العلوي */
     header {
       background: #007bff;
       color: white;
@@ -31,18 +32,6 @@
       cursor: pointer;
       border: none;
       font-size: 14px;
-    }
-
-    .add-btn {
-      background: #28a745;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      float: left;
-      margin-top: -45px;
-      font-weight: bold;
     }
 
     .main-container {
@@ -72,12 +61,51 @@
 
     .status { font-weight:bold; margin-top:10px; }
 
+    button {
+      padding: 10px 16px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:15px;
+      margin-left:7px;
+      transition:0.3s;
+    }
+
     .btn-accept { background:#28a745; color:white; }
     .btn-reject { background:#dc3545; color:white; }
     .btn-interview { background:#007bff; color:white; }
+    .btn-add { background:#007bff; color:white; width:100%; margin-top:15px; }
 
     button:hover { transform:scale(1.05); }
 
+    /* 📄 فورم إضافة وظيفة */
+    #addJobForm {
+      display:none;
+      margin-top:20px;
+      padding:20px;
+      border-radius:12px;
+      background:#f8f9fa;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #addJobForm input,
+    #addJobForm textarea {
+      width:100%;
+      padding:10px;
+      margin:6px 0;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-family:"Tajawal";
+    }
+
+    #addJobForm button {
+      width:100%;
+      background:#28a745;
+      color:white;
+      margin-top:10px;
+    }
+
+    /* نافذة المقابلة */
     .modal {
       display:none;
       position:fixed;
@@ -114,26 +142,38 @@
 
 <div class="main-container">
 
+  <!-- الطلبات -->
   <div class="container">
     <h2>📬 الطلبات المقدمة</h2>
     <div id="applicationsList"></div>
   </div>
 
-  <!-- 🌟 إضافة زر الوظيفة + -->
+  <!-- الوظائف المرفوعة -->
   <div class="container">
     <h2>💼 الوظائف التي قمت برفعها</h2>
 
-    <button class="add-btn" onclick="addJob()">➕ إضافة وظيفة</button>
+    <button class="btn-add" onclick="toggleAddJob()">➕ إضافة وظيفة جديدة</button>
 
-    <div id="companyJobsList" style="margin-top:50px;"></div>
+    <!-- فورم إضافة وظيفة داخل نفس الصفحة -->
+    <form id="addJobForm">
+      <input type="text" id="job_title" placeholder="المسمى الوظيفي" required>
+      <input type="text" id="location" placeholder="الموقع">
+      <input type="text" id="salary_range" placeholder="الراتب المتوقع">
+
+      <textarea id="job_description" placeholder="الوصف الوظيفي..." rows="4" required></textarea>
+
+      <button type="button" onclick="submitJob()">✔ إضافة الوظيفة</button>
+    </form>
+
+    <div id="companyJobsList"></div>
   </div>
 
 </div>
 
+<!-- 📅 نافذة المقابلة -->
 <div class="modal" id="interviewModal">
   <div class="modal-content">
     <h3>🕓 تحديد موعد المقابلة</h3>
-
     <input type="datetime-local" id="interviewDate">
     <button class="btn-interview" id="saveInterviewBtn">💾 حفظ الموعد</button>
     <button onclick="closeModal()">إلغاء</button>
@@ -141,8 +181,10 @@
 </div>
 
 <script>
-  let selectedApplication = null;
 
+  /* ========================
+      تحميل بيانات الشركة
+  ======================== */
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user || user.user_type !== "company") {
@@ -150,13 +192,21 @@
     location.href = "login.html";
   }
 
-  document.getElementById("companyName").innerText = user.full_name || user.username;
+  document.getElementById("companyName").innerText = user.full_name;
 
+
+  /* ========================
+       تسجيل خروج
+  ======================== */
   function logout() {
     localStorage.removeItem("user");
     location.href = "login.html";
   }
 
+
+  /* ========================
+      الطلبات
+  ======================== */
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -175,9 +225,7 @@
           <div><strong>${app.applicant_name}</strong> قدم على وظيفة: ${app.job_title}</div>
           <div>📧 ${app.email}</div>
           <div class="status">الحالة: ${app.status}</div>
-
-          ${app.cv_url ? `<a href="${app.cv_url}" target="_blank">📄 عرض السيرة الذاتية</a>` : ""}
-
+          ${app.cv_link ? `<a href="${app.cv_link}" target="_blank">📄 عرض السيرة الذاتية</a>` : ""}
           <br><br>
           <button class="btn-accept" onclick="updateStatus(${app.id}, 'مقبول')">قبول</button>
           <button class="btn-reject" onclick="updateStatus(${app.id}, 'مرفوض')">رفض</button>
@@ -186,6 +234,7 @@
       `;
     });
   }
+
 
   async function updateStatus(id, status) {
     await fetch("/.netlify/functions/update-application-status", {
@@ -198,6 +247,10 @@
     loadApplications();
   }
 
+
+  /* ========================
+        مقابلة
+  ======================== */
   function openModal(id) {
     selectedApplication = id;
     document.getElementById("interviewModal").style.display = "flex";
@@ -210,26 +263,21 @@
   document.getElementById("saveInterviewBtn").addEventListener("click", async () => {
     const date = document.getElementById("interviewDate").value;
 
-    if (!date) {
-      alert("⚠ يرجى اختيار موعد");
-      return;
-    }
-
     await fetch("/.netlify/functions/update-application-status", {
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        id: selectedApplication,
-        status: "مقابلة",
-        interview_date: date
-      })
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ id:selectedApplication, status:"مقابلة", interview_date:date })
     });
 
     closeModal();
-    alert("✔ تم تحديد موعد المقابلة");
+    alert("✔ تم تحديد الموعد");
     loadApplications();
   });
 
+
+  /* ========================
+     الوظائف الخاصة بك
+  ======================== */
   async function loadCompanyJobs() {
     const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
     const jobs = await res.json();
@@ -253,12 +301,45 @@
     });
   }
 
-  function addJob() {
-    window.location.href = "add-job.html"; // قم بإنشاء صفحة add-job لاحقًا
+
+  /* ========================
+        إضافة وظيفة
+  ======================== */
+  function toggleAddJob() {
+    const form = document.getElementById("addJobForm");
+    form.style.display = form.style.display === "none" ? "block" : "none";
   }
+
+  async function submitJob() {
+    const body = {
+      job_title: document.getElementById("job_title").value,
+      location: document.getElementById("location").value,
+      salary_range: document.getElementById("salary_range").value,
+      job_description: document.getElementById("job_description").value,
+      company_id: user.id
+    };
+
+    const res = await fetch("/.netlify/functions/add-job", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      alert("✔ تم إضافة الوظيفة بنجاح");
+      document.getElementById("addJobForm").reset();
+      loadCompanyJobs();
+    } else {
+      alert("❌ فشل الإضافة: " + result.message);
+    }
+  }
+
 
   loadApplications();
   loadCompanyJobs();
+
 </script>
 
 </body>
