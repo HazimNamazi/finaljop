@@ -127,7 +127,8 @@
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user || !user.id) {
-    console.error("❌ لا يوجد بيانات مستخدم في localStorage");
+    alert("⚠️ يجب تسجيل الدخول قبل التقديم.");
+    window.location.href = "/pages/login.html";
   }
 
   // 🎯 1) جلب اسم الوظيفة تلقائيًا
@@ -182,9 +183,6 @@
       const data = await res.json();
       console.log("Server response:", data);
 
-      // ---------------------------
-      // 🔥 الصندوق الجديد يظهر هنا
-      // ---------------------------
       uploadInfo.style.display = "block";
 
       displayJobName.innerText = jobTitleEl.innerText.replace("💼 الوظيفة: ", "");
@@ -193,8 +191,14 @@
       if (data.success) {
         displayStatus.innerHTML = "<span style='color:green;font-weight:bold'>✔️ تم الرفع بنجاح</span>";
         statusMessage.innerHTML =
-          "✔️ تم رفع السيرة الذاتية بنجاح!<br><span style='color:#007bff'>شكراً لك، تم إرسال طلبك.</span>";
+          "✔️ تم رفع السيرة الذاتية بنجاح!<br><span style='color:#007bff'>جاري تحويلك إلى صفحة طلباتك...</span>";
         statusMessage.style.color = "green";
+
+        // ⏳ إعادة توجيه بعد 1.5 ثانية → student-applications.html
+        setTimeout(() => {
+          window.location.href = "/pages/student-applications.html";
+        }, 1500);
+
       } else {
         displayStatus.innerHTML = "<span style='color:red;font-weight:bold'>❌ فشل الرفع</span>";
         statusMessage.innerHTML = `❌ فشل رفع الملف.<br>${data.error || data.message || ""}`;
