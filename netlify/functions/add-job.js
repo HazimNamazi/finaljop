@@ -1,31 +1,29 @@
 import { neon } from "@neondatabase/serverless";
 
 export async function handler(event) {
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ success: false, message: "Method Not Allowed" })
-    };
-  }
-
   try {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
-    const { job_id, student_id, cv_link } = JSON.parse(event.body);
+    const body = JSON.parse(event.body || "{}");
 
-    if (!job_id || !student_id || !cv_link) {
+    const {
+      company_id,
+      job_title,
+      job_description,
+      job_type,
+      location,
+      salary_range
+    } = body;
+
+    if (!company_id || !job_title || !job_description) {
       return {
         statusCode: 400,
-        body: JSON.stringify({
-          success: false,
-          message: "Missing fields (job_id, student_id, cv_link required)."
-        })
+        body: JSON.stringify({ message: "Missing required fields" })
       };
     }
 
-    // حفظ الطلب
     const result = await sql`
-      INSERT INTO applications (job_id, student_id, cv_link, status)
-      VALUES (${job_id}, ${student_id}, ${cv_link}, 'pending')
+      INSERT INTO jobs (company_id, job_title, job_description, job_type, location, salary_range)
+      VALUES (${company_id}, ${job_title}, ${job_description}, ${job_type}, ${location}, ${salary_range})
       RETURNING *;
     `;
 
@@ -33,19 +31,14 @@ export async function handler(event) {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
-        message: "Application submitted successfully.",
-        application: result[0]
+        job: result[0]
       })
     };
 
-  } catch (error) {
-    console.error("Error saving application:", error);
+  } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        success: false,
-        message: "Internal server error"
-      })
+      body: JSON.stringify({ message: err.message })
     };
   }
 }
