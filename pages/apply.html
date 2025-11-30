@@ -87,20 +87,16 @@
 <div class="container">
   <h2>📄 التقديم على الوظيفة</h2>
 
-  <!-- اسم الوظيفة هنا -->
   <h3 id="jobTitle">جاري تحميل اسم الوظيفة...</h3>
 
   <input type="file" id="cvFile" accept="application/pdf" onchange="showSelectedFile()">
 
-  <!-- اسم الملف يظهر هنا -->
   <p id="fileName"></p>
 
   <button onclick="submitApplication()">إرسال التقديم</button>
 
-  <!-- رسالة النجاح / الفشل -->
   <p id="statusMessage"></p>
 
-  <!-- 🔥 الصندوق الجديد -->
   <div id="uploadInfo">
     <p><strong>اسم الوظيفة:</strong> <span id="displayJobName"></span></p>
     <p><strong>اسم الملف:</strong> <span id="displayFileName"></span></p>
@@ -110,6 +106,15 @@
 </div>
 
 <script>
+  // قراءة بيانات المستخدم
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  // 🔥 التحقق من أن المستخدم طالب
+  if (!user || !user.id || user.user_type !== "student") {
+    alert("⚠️ يجب تسجيل الدخول كطالب.");
+    window.location.href = "/pages/login.html";
+  }
+
   // قراءة job_id من الرابط
   const params = new URLSearchParams(window.location.search);
   const jobId = params.get("job_id");
@@ -123,15 +128,7 @@
   const displayFileName = document.getElementById("displayFileName");
   const displayStatus = document.getElementById("displayStatus");
 
-  // قراءة بيانات المستخدم
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  if (!user || !user.id) {
-    alert("⚠️ يجب تسجيل الدخول قبل التقديم.");
-    window.location.href = "/pages/login.html";
-  }
-
-  // 🎯 1) جلب اسم الوظيفة تلقائيًا
+  // 🎯 1) جلب بيانات الوظيفة
   async function loadJobDetails() {
     const res = await fetch(`/.netlify/functions/get-job-details?job_id=${jobId}`);
     const data = await res.json();
@@ -142,7 +139,6 @@
       jobTitleEl.innerText = "❌ لم يتم العثور على وظيفة";
     }
   }
-
   loadJobDetails();
 
   // 🎯 2) عرض اسم الملف عند الاختيار
@@ -154,7 +150,7 @@
     }
   }
 
-  // 🎯 3) إرسال التقديم
+  // 🎯 3) رفع السيرة الذاتية
   async function submitApplication() {
     const file = document.getElementById("cvFile").files[0];
 
@@ -165,7 +161,6 @@
     }
 
     const reader = new FileReader();
-
     reader.onload = async function () {
       const base64File = reader.result.split(",")[1];
 
@@ -181,7 +176,6 @@
       });
 
       const data = await res.json();
-      console.log("Server response:", data);
 
       uploadInfo.style.display = "block";
 
@@ -194,7 +188,7 @@
           "✔️ تم رفع السيرة الذاتية بنجاح!<br><span style='color:#007bff'>جاري تحويلك إلى صفحة طلباتك...</span>";
         statusMessage.style.color = "green";
 
-        // ⏳ إعادة توجيه بعد 1.5 ثانية → student-applications.html
+        // 🔥 التحويل بعد نجاح الرفع
         setTimeout(() => {
           window.location.href = "/pages/student-applications.html";
         }, 1500);
