@@ -3,36 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <title>عرض السيرة الذاتية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
     body {
-      margin: 0;
-      background: #f0f2f5;
       font-family: 'Tajawal', sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+      margin: 0;
+      background: #f3f5f7;
     }
 
     header {
       background: #007bff;
       color: white;
-      padding: 12px 20px;
-      font-size: 20px;
+      padding: 15px;
       text-align: center;
+      font-size: 20px;
+      font-weight: bold;
     }
 
     iframe {
-      flex: 1;
       width: 100%;
+      height: 90vh;
       border: none;
     }
 
     .error {
-      padding: 30px;
       text-align: center;
-      color: red;
+      margin-top: 40px;
       font-size: 20px;
-      font-weight: bold;
+      color: red;
     }
   </style>
 </head>
@@ -41,17 +40,19 @@
 
 <header>📄 عرض السيرة الذاتية</header>
 
-<div id="content"></div>
+<div id="viewer"></div>
 
 <script>
   const params = new URLSearchParams(window.location.search);
-  const file = params.get("file");
-  const contentDiv = document.getElementById("content");
+  const fileURL = params.get("file");
 
-  if (!file) {
-    contentDiv.innerHTML = "<p class='error'>❌ لا يوجد ملف للعرض</p>";
+  if (!fileURL) {
+    document.getElementById("viewer").innerHTML =
+      "<p class='error'>❌ لا يوجد ملف لعرضه.</p>";
   } else {
-    contentDiv.innerHTML = `<iframe src="${file}"></iframe>`;
+    document.getElementById("viewer").innerHTML = `
+      <iframe src="${decodeURIComponent(fileURL)}"></iframe>
+    `;
   }
 </script>
 
