@@ -2,158 +2,164 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>📄 طلباتي - بوابة الوظائف</title>
+  <title>📄 طلباتي</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
     body {
-      background: #eef1f5;
-      font-family: 'Tajawal';
-      margin: 0;
-      padding: 0;
+      background:#eef1f5;
+      font-family:'Tajawal', sans-serif;
+      margin:0;
+      padding:20px;
     }
 
-    header {
-      background: #007bff;
-      color: white;
-      padding: 15px 25px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 18px;
-    }
-
-    .logout-btn {
-      background: #dc3545;
-      padding: 8px 15px;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      border: none;
-      font-size: 14px;
-    }
-
-    .main-container {
-      padding: 25px;
-      max-width: 900px;
-      margin: auto;
+    h2 {
+      color:#007bff;
+      margin-bottom:20px;
     }
 
     .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 18px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      background:white;
+      padding:20px;
+      margin-bottom:15px;
+      border-radius:10px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .title {
+      font-size:18px;
+      font-weight:700;
+      color:#007bff;
+      margin-bottom:5px;
     }
 
     .status {
-      font-weight: bold;
-      margin-top: 8px;
+      font-weight:bold;
+      margin-top:10px;
     }
 
-    .btn-cv {
-      background: #6c63ff;
-      color: white;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-      width: 100%;
+    .badge {
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:20px;
+      font-size:13px;
+      margin-top:6px;
     }
 
-    .btn-cv:hover {
-      transform: scale(1.05);
+    .accepted { color:green; }
+    .rejected { color:red; }
+    .pending { color:orange; }
+
+    .badge-accepted {
+      background:#e6f9ec;
+      color:#1e7e34;
+    }
+    .badge-rejected {
+      background:#fdecea;
+      color:#c82333;
+    }
+    .badge-pending {
+      background:#fff4e5;
+      color:#e69500;
     }
 
+    .interview-box {
+      margin-top:10px;
+      padding:10px;
+      border-radius:8px;
+      background:#e8f4ff;
+      border:1px solid #b6daff;
+      font-weight:600;
+    }
+
+    a {
+      color:#007bff;
+      font-weight:600;
+      text-decoration:none;
+    }
   </style>
 </head>
 
 <body>
 
-<header>
-  <div id="studentName">الطالب</div>
-  <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
-</header>
-
-<div class="main-container">
-  <h2>📄 الطلبات التي قدمتها</h2>
-  <div id="applicationsList">⏳ جاري التحميل...</div>
-</div>
+<h2>📄 طلباتي</h2>
+<div id="list"></div>
 
 <script>
-  /* =============================
-       التحقق من تسجيل الطالب
-  ============================== */
+  // التأكد من تسجيل الدخول كطالب
   const user = JSON.parse(localStorage.getItem("user"));
-
   if (!user || user.user_type !== "job_seeker") {
     alert("⚠️ يجب تسجيل الدخول كطالب.");
-    window.location.href = "/pages/login.html";
-  }
-
-  document.getElementById("studentName").innerText = user.full_name;
-
-
-  /* =============================
-       تسجيل الخروج
-  ============================== */
-  function logout() {
-    localStorage.removeItem("user");
     location.href = "login.html";
   }
 
-
-  /* =============================
-        تحميل طلبات الطالب
-  ============================== */
-  async function loadStudentApps() {
+  async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-student-applications?student_id=${user.id}`);
     const data = await res.json();
 
-    const list = document.getElementById("applicationsList");
-    list.innerHTML = "";
+    const container = document.getElementById("list");
+    container.innerHTML = "";
 
-    if (!data.success || !data.applications.length) {
-      list.innerHTML = "<p>لا توجد طلبات حتى الآن.</p>";
+    if (!data.applications || !data.applications.length) {
+      container.innerHTML = "<p>❗ لا توجد طلبات حتى الآن.</p>";
       return;
     }
 
     data.applications.forEach(app => {
-      list.innerHTML += `
+      const status = (app.status || "").toLowerCase();
+      let readableStatus = app.status || "غير محدد";
+      let statusClass = "pending";
+      let badgeClass = "badge-pending";
+
+      if (status === "accepted" || status === "مقبول") {
+        statusClass = "accepted";
+        badgeClass = "badge-accepted";
+        readableStatus = "مقبول";
+      } else if (status === "rejected" || status === "مرفوض") {
+        statusClass = "rejected";
+        badgeClass = "badge-rejected";
+        readableStatus = "مرفوض";
+      } else if (status === "مقابلة" || status === "interview") {
+        statusClass = "pending";
+        badgeClass = "badge-pending";
+        readableStatus = "مقابلة";
+      } else {
+        readableStatus = "قيد المراجعة";
+      }
+
+      const hasInterviewDate = !!app.interview_date;
+
+      container.innerHTML += `
         <div class="card">
-          <h3>💼 ${app.job_title}</h3>
+          <div class="title">💼 ${app.job_title} – ${app.company_name}</div>
+          <div>📍 ${app.location} | 💰 ${app.salary_range || "غير محدد"}</div>
+          <div>📅 تاريخ التقديم: ${app.created_at ? app.created_at.split("T")[0] : ""}</div>
 
-          <p><strong>الشركة:</strong> ${app.company_name}</p>
-          <p><strong>التاريخ:</strong> ${app.created_at?.split("T")[0] || "—"}</p>
+          <div class="status ${statusClass}">
+            📝 الحالة:
+            <span class="badge ${badgeClass}">${readableStatus}</span>
+          </div>
 
-          <p class="status">
-            <strong>الحالة:</strong>
-            <span style="color:${getStatusColor(app.status)};">${app.status}</span>
-          </p>
+          ${hasInterviewDate ? `
+            <div class="interview-box">
+              📅 تم تحديد موعد المقابلة:<br>
+              ${app.interview_date}
+            </div>
+          ` : ""}
 
-          ${app.cv_url 
-            ? `<button class="btn-cv" onclick="window.open('${app.cv_url}', '_blank')">📄 عرض السيرة الذاتية</button>`
-            : "<p style='color:red;'>❌ لم يتم رفع سيرة ذاتية</p>"
-          }
+          ${app.cv_url ? `
+            <div style="margin-top:10px;">
+              <a href="view-cv.html?file=${encodeURIComponent(app.cv_url)}" target="_blank">
+                📎 عرض السيرة الذاتية
+              </a>
+            </div>
+          ` : ""}
         </div>
       `;
     });
   }
 
-  /* لون الحالة */
-  function getStatusColor(status) {
-    switch (status) {
-      case "مقبول": return "green";
-      case "مرفوض": return "red";
-      case "مقابلة": return "#007bff";
-      default: return "black";
-    }
-  }
-
-  loadStudentApps();
-
+  loadApplications();
 </script>
 
 </body>

@@ -64,7 +64,6 @@
       font-size: 17px;
     }
 
-    /* الصندوق الجديد */
     #uploadInfo {
       display: none;
       background: #f7f9fc;
@@ -106,16 +105,16 @@
 </div>
 
 <script>
-  // قراءة بيانات المستخدم
+  // 🧑‍🎓 قراءة بيانات المستخدم
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // 🔥 التحقق الصحيح حسب قاعدة البيانات (job_seeker)
+  // نتأكد أنه طالب (job_seeker)
   if (!user || !user.id || user.user_type !== "job_seeker") {
     alert("⚠️ يجب تسجيل الدخول كطالب.");
     window.location.href = "/pages/login.html";
   }
 
-  // قراءة job_id
+  // قراءة job_id من الرابط
   const params = new URLSearchParams(window.location.search);
   const jobId = params.get("job_id");
 
@@ -128,21 +127,25 @@
   const displayFileName = document.getElementById("displayFileName");
   const displayStatus = document.getElementById("displayStatus");
 
-  // 🎯 جلب بيانات الوظيفة
+  // 🎯 جلب بيانات الوظيفة من Function get-job-details
   async function loadJobDetails() {
-    const res = await fetch(`/.netlify/functions/get-job-details?job_id=${jobId}`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`/.netlify/functions/get-job-details?job_id=${jobId}`);
+      const data = await res.json();
 
-    if (data.job_title) {
-      jobTitleEl.innerText = `💼 الوظيفة: ${data.job_title}`;
-    } else {
-      jobTitleEl.innerText = "❌ لم يتم العثور على وظيفة";
+      if (data.job_title) {
+        jobTitleEl.innerText = `💼 الوظيفة: ${data.job_title}`;
+      } else {
+        jobTitleEl.innerText = "❌ لم يتم العثور على وظيفة";
+      }
+    } catch (e) {
+      jobTitleEl.innerText = "⚠️ خطأ في جلب بيانات الوظيفة";
     }
   }
 
   loadJobDetails();
 
-  // 🎯 عرض اسم الملف
+  // عند اختيار ملف
   function showSelectedFile() {
     const file = document.getElementById("cvFile").files[0];
     if (file) {
@@ -151,7 +154,7 @@
     }
   }
 
-  // 🎯 رفع السيرة الذاتية
+  // إرسال الطلب + رفع السيرة الذاتية
   async function submitApplication() {
     const file = document.getElementById("cvFile").files[0];
 
@@ -171,7 +174,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           job_id: jobId,
-          student_id: user.id,  // لا تغيّرها حتى لو المستخدم job_seeker
+          student_id: user.id,   // مهم: نفس الحقل في الداتابيس
           fileName: file.name,
           fileContent: base64File
         })
@@ -203,7 +206,6 @@
     reader.readAsDataURL(file);
   }
 </script>
-
 
 </body>
 </html>

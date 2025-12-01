@@ -119,6 +119,13 @@
       text-align:center;
     }
 
+    input[type="datetime-local"] {
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      margin-bottom:15px;
+      border:1px solid #ccc;
+    }
   </style>
 </head>
 
@@ -131,11 +138,13 @@
 
 <div class="main-container">
 
+  <!-- الطلبات -->
   <div class="container">
     <h2>📬 الطلبات المقدمة</h2>
     <div id="applicationsList"></div>
   </div>
 
+  <!-- الوظائف -->
   <div class="container">
     <h2>💼 الوظائف التي قمت برفعها</h2>
 
@@ -143,6 +152,7 @@
 
     <form id="addJobForm">
       <input type="text" id="job_title" placeholder="المسمى الوظيفي" required>
+      <input type="text" id="company_name" placeholder="اسم الشركة (اختياري)">
       <input type="text" id="location" placeholder="الموقع">
       <input type="text" id="salary_range" placeholder="الراتب المتوقع">
       <textarea id="job_description" placeholder="الوصف الوظيفي..." rows="4" required></textarea>
@@ -154,6 +164,7 @@
 
 </div>
 
+<!-- نافذة المقابلة -->
 <div class="modal" id="interviewModal">
   <div class="modal-content">
     <h3>🕓 تحديد موعد المقابلة</h3>
@@ -164,6 +175,7 @@
 </div>
 
 <script>
+  let selectedApplication = null;
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -172,13 +184,14 @@
     location.href = "login.html";
   }
 
-  document.getElementById("companyName").innerText = user.full_name;
+  document.getElementById("companyName").innerText = user.full_name || "الشركة";
 
   function logout() {
     localStorage.removeItem("user");
     location.href = "login.html";
   }
 
+  // تحميل الطلبات
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -245,9 +258,11 @@
     });
 
     closeModal();
+    alert("✔ تم تحديد الموعد");
     loadApplications();
   });
 
+  // تحميل وظائف الشركة
   async function loadCompanyJobs() {
     const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
     const jobs = await res.json();
@@ -264,6 +279,7 @@
       list.innerHTML += `
         <div class="card">
           <strong>${job.job_title}</strong>
+          <div>🏢 ${job.company_name || ""}</div>
           <div>📍 ${job.location}</div>
           <div>💰 ${job.salary_range}</div>
         </div>
@@ -271,14 +287,17 @@
     });
   }
 
+  // إظهار وإخفاء فورم إضافة وظيفة
   function toggleAddJob() {
     const form = document.getElementById("addJobForm");
     form.style.display = form.style.display === "none" ? "block" : "none";
   }
 
+  // إرسال وظيفة جديدة
   async function submitJob() {
     const body = {
       job_title: document.getElementById("job_title").value,
+      company_name: document.getElementById("company_name").value || user.full_name,
       location: document.getElementById("location").value,
       salary_range: document.getElementById("salary_range").value,
       job_description: document.getElementById("job_description").value,
@@ -291,19 +310,19 @@
       body: JSON.stringify(body)
     });
 
+    const data = await res.json();
+
     if (res.ok) {
       alert("✔ تم إضافة الوظيفة بنجاح");
       document.getElementById("addJobForm").reset();
       loadCompanyJobs();
     } else {
-      const data = await res.json();
-      alert("❌ فشل الإضافة: " + data.message);
+      alert("❌ فشل الإضافة: " + (data.message || "خطأ غير معروف"));
     }
   }
 
   loadApplications();
   loadCompanyJobs();
-
 </script>
 
 </body>
