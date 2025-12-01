@@ -70,7 +70,21 @@
       transition:0.3s;
     }
 
-    .btn-open-cv { background:#6c63ff; color:white; }
+    .btn-open-cv {
+      background:#6c63ff;
+      color:white;
+      text-decoration: none;
+      display:inline-block;
+      padding: 8px 14px;
+      border-radius:8px;
+      font-size:14px;
+      margin-top:10px;
+    }
+
+    .btn-open-cv:hover {
+      transform: scale(1.03);
+    }
+
     .btn-accept { background:#28a745; color:white; }
     .btn-reject { background:#dc3545; color:white; }
     .btn-interview { background:#007bff; color:white; }
@@ -152,7 +166,6 @@
 
     <form id="addJobForm">
       <input type="text" id="job_title" placeholder="المسمى الوظيفي" required>
-      <input type="text" id="company_name" placeholder="اسم الشركة (اختياري)">
       <input type="text" id="location" placeholder="الموقع">
       <input type="text" id="salary_range" placeholder="الراتب المتوقع">
       <textarea id="job_description" placeholder="الوصف الوظيفي..." rows="4" required></textarea>
@@ -175,8 +188,7 @@
 </div>
 
 <script>
-  let selectedApplication = null;
-
+  // ✅ بيانات الشركة من localStorage
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user || user.user_type !== "company") {
@@ -191,7 +203,9 @@
     location.href = "login.html";
   }
 
-  // تحميل الطلبات
+  /* ========================
+      تحميل الطلبات
+  ======================== */
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -205,6 +219,11 @@
     }
 
     apps.forEach(app => {
+      // 🔹 زر تحميل السيرة الذاتية نفس فكرة صفحة الطالب
+      const cvHtml = app.cv_url
+        ? `<a href="${app.cv_url}" class="btn-open-cv" download>📄 تحميل السيرة الذاتية</a>`
+        : "<p style='color:red'>❌ لا يوجد سيرة ذاتية</p>";
+
       list.innerHTML += `
         <div class="card">
           <div><strong>${app.applicant_name}</strong> قدم على وظيفة: ${app.job_title}</div>
@@ -212,11 +231,7 @@
 
           <div class="status">الحالة: ${app.status}</div>
 
-          ${
-            app.cv_url
-              ? `<button class="btn-open-cv" onclick="window.location.href='view-cv.html?file=${encodeURIComponent(app.cv_url)}'">📄 عرض السيرة الذاتية</button>`
-              : "<p style='color:red'>❌ لا يوجد سيرة ذاتية</p>"
-          }
+          ${cvHtml}
 
           <br><br>
 
@@ -239,6 +254,11 @@
     loadApplications();
   }
 
+  /* ========================
+      المقابلات
+  ======================== */
+  let selectedApplication = null;
+
   function openModal(id) {
     selectedApplication = id;
     document.getElementById("interviewModal").style.display = "flex";
@@ -251,6 +271,11 @@
   document.getElementById("saveInterviewBtn").addEventListener("click", async () => {
     const date = document.getElementById("interviewDate").value;
 
+    if (!date) {
+      alert("⚠️ يرجى اختيار موعد");
+      return;
+    }
+
     await fetch("/.netlify/functions/update-application-status", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -262,7 +287,9 @@
     loadApplications();
   });
 
-  // تحميل وظائف الشركة
+  /* ========================
+      وظائف الشركة
+  ======================== */
   async function loadCompanyJobs() {
     const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
     const jobs = await res.json();
@@ -279,7 +306,6 @@
       list.innerHTML += `
         <div class="card">
           <strong>${job.job_title}</strong>
-          <div>🏢 ${job.company_name || ""}</div>
           <div>📍 ${job.location}</div>
           <div>💰 ${job.salary_range}</div>
         </div>
@@ -287,17 +313,17 @@
     });
   }
 
-  // إظهار وإخفاء فورم إضافة وظيفة
+  /* ========================
+      إضافة وظيفة جديدة
+  ======================== */
   function toggleAddJob() {
     const form = document.getElementById("addJobForm");
     form.style.display = form.style.display === "none" ? "block" : "none";
   }
 
-  // إرسال وظيفة جديدة
   async function submitJob() {
     const body = {
       job_title: document.getElementById("job_title").value,
-      company_name: document.getElementById("company_name").value || user.full_name,
       location: document.getElementById("location").value,
       salary_range: document.getElementById("salary_range").value,
       job_description: document.getElementById("job_description").value,
@@ -310,19 +336,20 @@
       body: JSON.stringify(body)
     });
 
-    const data = await res.json();
-
     if (res.ok) {
       alert("✔ تم إضافة الوظيفة بنجاح");
       document.getElementById("addJobForm").reset();
       loadCompanyJobs();
     } else {
+      const data = await res.json();
       alert("❌ فشل الإضافة: " + (data.message || "خطأ غير معروف"));
     }
   }
 
+  // 🔁 أول تحميل
   loadApplications();
   loadCompanyJobs();
+
 </script>
 
 </body>
