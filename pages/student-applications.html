@@ -18,6 +18,7 @@
       margin-bottom:20px;
     }
 
+    /* بطاقات الطلبات */
     .card {
       background:white;
       padding:20px;
@@ -77,11 +78,62 @@
       font-weight:600;
       text-decoration:none;
     }
+
+    /* ورش العمل */
+    .workshop-card {
+      background:white;
+      padding:20px;
+      margin-bottom:15px;
+      border-radius:10px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .workshop-title {
+      font-size:18px;
+      font-weight:700;
+      color:#28a745;
+      margin-bottom:5px;
+    }
+
+    .attended-tag {
+      display:inline-block;
+      padding:4px 10px;
+      background:#e6f9ec;
+      color:#1e7e34;
+      border-radius:20px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    button {
+      padding:8px 14px;
+      background:#007bff;
+      color:white;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      margin-top:10px;
+    }
+
+    button:hover {
+      background:#0056b3;
+    }
   </style>
 </head>
 
 <body>
 
+<!-- ------------------------------ -->
+<!--        قسم الورش               -->
+<!-- ------------------------------ -->
+<h2>📘 ورش العمل المتاحة</h2>
+<div id="workshops"></div>
+
+<hr style="margin:35px 0;">
+
+<!-- ------------------------------ -->
+<!--         قسم الطلبات            -->
+<!-- ------------------------------ -->
 <h2>📄 طلباتي</h2>
 <div id="list"></div>
 
@@ -93,8 +145,68 @@
     location.href = "login.html";
   }
 
+  // =============================================
+  //         تحميل ورش العمل
+  // =============================================
+  async function loadWorkshops() {
+    const res = await fetch("/.netlify/functions/get-workshops");
+    const workshops = await res.json();
+
+    const wContainer = document.getElementById("workshops");
+    wContainer.innerHTML = "";
+
+    if (!workshops.length) {
+      wContainer.innerHTML = "<p>❗ لا توجد ورش حالياً.</p>";
+      return;
+    }
+
+    for (let w of workshops) {
+      // التحقق من تسجيل الطالب
+      const attRes = await fetch(
+        `/.netlify/functions/check-workshop-attendance?student_id=${user.id}&workshop_id=${w.id}`
+      );
+      const attended = (await attRes.json()).attended;
+
+      wContainer.innerHTML += `
+        <div class="workshop-card">
+          <div class="workshop-title">📘 ${w.title}</div>
+          <div>📅 ${w.date} – ⏰ ${w.time}</div>
+          <div>📍 ${w.location || "اونلاين"}</div>
+
+          ${w.link ? `<a href="${w.link}" target="_blank">🔗 رابط الورشة</a>` : ""}
+
+          <div style="margin-top:10px;">
+            ${
+              attended
+                ? `<span class="attended-tag">✔️ حضرت الورشة</span>`
+                : `<button onclick="attendWorkshop(${w.id})">تسجيل حضور</button>`
+            }
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  async function attendWorkshop(workshop_id) {
+    await fetch("/.netlify/functions/attend-workshop", {
+      method: "POST",
+      body: JSON.stringify({
+        student_id: user.id,
+        workshop_id
+      })
+    });
+
+    alert("✔️ تم تسجيل حضورك بنجاح");
+    loadWorkshops();
+  }
+
+  // =============================================
+  //        تحميل طلبات الوظائف
+  // =============================================
   async function loadApplications() {
-    const res = await fetch(`/.netlify/functions/get-student-applications?student_id=${user.id}`);
+    const res = await fetch(
+      `/.netlify/functions/get-student-applications?student_id=${user.id}`
+    );
     const data = await res.json();
 
     const container = document.getElementById("list");
@@ -108,19 +220,15 @@
     data.applications.forEach(app => {
       const status = (app.status || "").toLowerCase();
       let readableStatus = app.status || "غير محدد";
-      let statusClass = "pending";
       let badgeClass = "badge-pending";
 
       if (status === "accepted" || status === "مقبول") {
-        statusClass = "accepted";
         badgeClass = "badge-accepted";
         readableStatus = "مقبول";
       } else if (status === "rejected" || status === "مرفوض") {
-        statusClass = "rejected";
         badgeClass = "badge-rejected";
         readableStatus = "مرفوض";
-      } else if (status === "مقابلة" || status === "interview") {
-        statusClass = "pending";
+      } else if (status === "interview" || status === "مقابلة") {
         badgeClass = "badge-pending";
         readableStatus = "مقابلة";
       } else {
@@ -135,30 +243,40 @@
           <div>📍 ${app.location} | 💰 ${app.salary_range || "غير محدد"}</div>
           <div>📅 تاريخ التقديم: ${app.created_at ? app.created_at.split("T")[0] : ""}</div>
 
-          <div class="status ${statusClass}">
+          <div class="status">
             📝 الحالة:
             <span class="badge ${badgeClass}">${readableStatus}</span>
           </div>
 
-          ${hasInterviewDate ? `
+          ${
+            hasInterviewDate
+              ? `
             <div class="interview-box">
               📅 تم تحديد موعد المقابلة:<br>
               ${app.interview_date}
             </div>
-          ` : ""}
+          `
+              : ""
+          }
 
-          ${app.cv_url ? `
+          ${
+            app.cv_url
+              ? `
             <div style="margin-top:10px;">
               <a href="view-cv.html?file=${encodeURIComponent(app.cv_url)}" target="_blank">
                 📎 عرض السيرة الذاتية
               </a>
             </div>
-          ` : ""}
+          `
+              : ""
+          }
         </div>
       `;
     });
   }
 
+  // تشغيل كل شيء
+  loadWorkshops();
   loadApplications();
 </script>
 

@@ -191,13 +191,17 @@
 
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
+
+      const loginData = {
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value.trim()
+      };
 
       try {
         const res = await fetch("/.netlify/functions/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
+          body: JSON.stringify(loginData)
         });
 
         const result = await res.json();
@@ -207,26 +211,24 @@
           return;
         }
 
-        // ✅ نجاح تسجيل الدخول
-        const user = result.user;
-        showAlert("✅ تم تسجيل الدخول بنجاح!", "success");
+        // 🔥 حفظ بيانات المستخدم في localStorage
+        localStorage.setItem("user", JSON.stringify(result.user));
 
-        localStorage.setItem("user", JSON.stringify({
-          id: user.id,
-          full_name: user.full_name,
-          email: user.email,
-          user_type: user.user_type,
-          status: user.status
-        }));
+        showAlert("✔️ تم تسجيل الدخول بنجاح!", "success");
 
-        // ✅ إعادة التوجيه حسب نوع الحساب
+        // 🔥 إعادة التوجيه حسب نوع الحساب
         setTimeout(() => {
-          if (user.user_type === "company") {
-            window.location.href = "company-dashboard.html"; // لوحة تحكم الشركات
-          } else if (user.user_type === "job_seeker" || user.user_type === "student") {
-            window.location.href = "jobs.html"; // صفحة الوظائف للطلاب
-          } else {
-            showAlert("⚠️ نوع المستخدم غير معروف، تواصل مع الدعم", "error");
+          const type = result.user.user_type;
+
+          if (type === "admin") {
+            window.location.href = "admin-dashboard.html";
+          }
+          else if (type === "company") {
+            window.location.href = "company-dashboard.html";
+          }
+          else {
+            // طالب
+            window.location.href = "jobs.html";
           }
         }, 1200);
 
@@ -236,5 +238,6 @@
       }
     });
   </script>
+
 </body>
 </html>

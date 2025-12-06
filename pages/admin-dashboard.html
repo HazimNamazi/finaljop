@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>لوحة الأدمن - الورش</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(135deg, #001f3f, #0a84ff);
+      padding: 30px;
+      color: #fff;
+    }
+
+    .box {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #ffd369;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: .2s;
+    }
+
+    button:hover {
+      background: #ffcf3a;
+    }
+
+    table {
+      width: 100%;
+      background: #fff;
+      color: #000;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+
+    a.students-btn {
+      background: #17a2b8;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>📘 إدارة الورش</h1>
+
+<!-- إنشاء ورشة -->
+<div class="box">
+  <h2>➕ إنشاء ورشة جديدة</h2>
+
+  <input id="title" placeholder="عنوان الورشة">
+  <textarea id="desc" placeholder="الوصف"></textarea>
+  <input id="date" type="date">
+  <input id="time" type="time">
+  <input id="location" placeholder="الموقع">
+  <input id="link" placeholder="رابط الورشة (اختياري)">
+
+  <button onclick="createWorkshop()">إنشاء الورشة</button>
+</div>
+
+<!-- جميع الورش -->
+<div class="box">
+  <h2>📚 جميع الورش</h2>
+  <table id="workshopsTable"></table>
+</div>
+
+<script>
+/* ───────────────────────────────────────────────
+    إنشاء ورشة جديدة
+─────────────────────────────────────────────── */
+async function createWorkshop() {
+  const admin_id = localStorage.getItem("user_id");
+
+  const data = {
+    admin_id,
+    title: title.value,
+    description: desc.value,
+    date: date.value,
+    time: time.value,
+    location: location.value,
+    link: link.value
+  };
+
+  await fetch("/.netlify/functions/add-workshop", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+
+  alert("✔️ تم إنشاء الورشة بنجاح");
+  loadWorkshops();
+}
+
+/* ───────────────────────────────────────────────
+    عرض الورش داخل جدول
+─────────────────────────────────────────────── */
+async function loadWorkshops() {
+  const res = await fetch("/.netlify/functions/get-workshops");
+  const workshops = await res.json();
+
+  let html = `
+    <tr>
+      <th>العنوان</th>
+      <th>التاريخ</th>
+      <th>الوقت</th>
+      <th>الطلاب</th>
+      <th>حذف</th>
+    </tr>
+  `;
+
+  workshops.forEach(w => {
+    html += `
+      <tr>
+        <td>${w.title}</td>
+        <td>${w.date}</td>
+        <td>${w.time}</td>
+
+        <td>
+          <a class="students-btn"
+             href="admin-workshop-students.html?id=${w.id}">
+             👤 عرض الطلاب
+          </a>
+        </td>
+
+        <td>
+          <button class="delete-btn" onclick="deleteWorkshop(${w.id})">🗑 حذف</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("workshopsTable").innerHTML = html;
+}
+
+/* ───────────────────────────────────────────────
+    حذف ورشة
+─────────────────────────────────────────────── */
+async function deleteWorkshop(id) {
+  await fetch("/.netlify/functions/delete-workshop?id=" + id);
+  alert("🗑 تم حذف الورشة");
+  loadWorkshops();
+}
+
+loadWorkshops();
+</script>
+
+</body>
+</html>
