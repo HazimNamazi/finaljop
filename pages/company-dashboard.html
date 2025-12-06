@@ -70,6 +70,31 @@
       transition:0.3s;
     }
 
+    textarea.message-box {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 12px;
+      font-family: Tajawal;
+    }
+
+    .msg-btn {
+      background:#17a2b8;
+      color:white;
+      margin-top:8px;
+      width:100%;
+    }
+
+    .prev-msg {
+      background: #e9f7ff;
+      border-left: 4px solid #0a84ff;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
     .btn-open-cv {
       background:#6c63ff;
       color:white;
@@ -88,58 +113,7 @@
     .btn-accept { background:#28a745; color:white; }
     .btn-reject { background:#dc3545; color:white; }
     .btn-interview { background:#007bff; color:white; }
-    .btn-add { background:#007bff; color:white; width:100%; margin-top:15px; }
 
-    #addJobForm {
-      display:none;
-      margin-top:20px;
-      padding:20px;
-      border-radius:12px;
-      background:#f8f9fa;
-      box-shadow:0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    #addJobForm input,
-    #addJobForm textarea {
-      width:100%;
-      padding:10px;
-      margin:6px 0;
-      border-radius:8px;
-      border:1px solid #ccc;
-      font-family:"Tajawal";
-    }
-
-    #addJobForm button {
-      width:100%;
-      background:#28a745;
-      color:white;
-      margin-top:10px;
-    }
-
-    .modal {
-      display:none;
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.5);
-      justify-content:center;
-      align-items:center;
-    }
-
-    .modal-content {
-      background:white;
-      padding:25px;
-      border-radius:12px;
-      width:350px;
-      text-align:center;
-    }
-
-    input[type="datetime-local"] {
-      width:100%;
-      padding:10px;
-      border-radius:8px;
-      margin-bottom:15px;
-      border:1px solid #ccc;
-    }
   </style>
 </head>
 
@@ -158,37 +132,10 @@
     <div id="applicationsList"></div>
   </div>
 
-  <!-- الوظائف -->
-  <div class="container">
-    <h2>💼 الوظائف التي قمت برفعها</h2>
-
-    <button class="btn-add" onclick="toggleAddJob()">➕ إضافة وظيفة جديدة</button>
-
-    <form id="addJobForm">
-      <input type="text" id="job_title" placeholder="المسمى الوظيفي" required>
-      <input type="text" id="location" placeholder="الموقع">
-      <input type="text" id="salary_range" placeholder="الراتب المتوقع">
-      <textarea id="job_description" placeholder="الوصف الوظيفي..." rows="4" required></textarea>
-      <button type="button" onclick="submitJob()">✔ إضافة الوظيفة</button>
-    </form>
-
-    <div id="companyJobsList"></div>
-  </div>
-
 </div>
 
-<!-- نافذة المقابلة -->
-<div class="modal" id="interviewModal">
-  <div class="modal-content">
-    <h3>🕓 تحديد موعد المقابلة</h3>
-    <input type="datetime-local" id="interviewDate">
-    <button class="btn-interview" id="saveInterviewBtn">💾 حفظ الموعد</button>
-    <button onclick="closeModal()">إلغاء</button>
-  </div>
-</div>
 
 <script>
-  // ✅ بيانات الشركة من localStorage
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user || user.user_type !== "company") {
@@ -204,7 +151,7 @@
   }
 
   /* ========================
-      تحميل الطلبات
+      تحميل الطلبات + الرسائل
   ======================== */
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
@@ -219,7 +166,11 @@
     }
 
     apps.forEach(app => {
-      // 🔹 زر تحميل السيرة الذاتية نفس فكرة صفحة الطالب
+
+      const prevMessage = app.message_from_company
+        ? `<div class="prev-msg">💬 أحدث رسالة: <br>${app.message_from_company}</div>`
+        : "";
+
       const cvHtml = app.cv_url
         ? `<a href="${app.cv_url}" class="btn-open-cv" download>📄 تحميل السيرة الذاتية</a>`
         : "<p style='color:red'>❌ لا يوجد سيرة ذاتية</p>";
@@ -230,8 +181,17 @@
           <div>📧 ${app.email}</div>
 
           <div class="status">الحالة: ${app.status}</div>
-
           ${cvHtml}
+
+          ${prevMessage}
+
+          <textarea 
+            class="message-box" 
+            placeholder="✏️ كتابة رسالة للطالب"
+            id="msg-${app.id}"
+          ></textarea>
+
+          <button class="msg-btn" onclick="sendMessage(${app.id})">💬 إرسال الرسالة</button>
 
           <br><br>
 
@@ -243,10 +203,34 @@
     });
   }
 
+  /* ========================
+      إرسال رسالة للطالب
+  ======================== */
+  async function sendMessage(application_id) {
+    const message = document.getElementById(`msg-${application_id}`).value.trim();
+
+    if (!message) {
+      alert("⚠️ الرجاء كتابة الرسالة");
+      return;
+    }
+
+    await fetch("/.netlify/functions/send-message", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ application_id, message })
+    });
+
+    alert("✔️ تم إرسال الرسالة");
+    loadApplications();
+  }
+
+  /* ========================
+      تحديث حالة الطلب
+  ======================== */
   async function updateStatus(id, status) {
     await fetch("/.netlify/functions/update-application-status", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type":"application/json" },
       body: JSON.stringify({ id, status })
     });
 
@@ -254,102 +238,7 @@
     loadApplications();
   }
 
-  /* ========================
-      المقابلات
-  ======================== */
-  let selectedApplication = null;
-
-  function openModal(id) {
-    selectedApplication = id;
-    document.getElementById("interviewModal").style.display = "flex";
-  }
-
-  function closeModal() {
-    document.getElementById("interviewModal").style.display = "none";
-  }
-
-  document.getElementById("saveInterviewBtn").addEventListener("click", async () => {
-    const date = document.getElementById("interviewDate").value;
-
-    if (!date) {
-      alert("⚠️ يرجى اختيار موعد");
-      return;
-    }
-
-    await fetch("/.netlify/functions/update-application-status", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ id:selectedApplication, status:"مقابلة", interview_date:date })
-    });
-
-    closeModal();
-    alert("✔ تم تحديد الموعد");
-    loadApplications();
-  });
-
-  /* ========================
-      وظائف الشركة
-  ======================== */
-  async function loadCompanyJobs() {
-    const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
-    const jobs = await res.json();
-
-    const list = document.getElementById("companyJobsList");
-    list.innerHTML = "";
-
-    if (!jobs.length) {
-      list.innerHTML = "<p>لا توجد وظائف منشورة.</p>";
-      return;
-    }
-
-    jobs.forEach(job => {
-      list.innerHTML += `
-        <div class="card">
-          <strong>${job.job_title}</strong>
-          <div>📍 ${job.location}</div>
-          <div>💰 ${job.salary_range}</div>
-        </div>
-      `;
-    });
-  }
-
-  /* ========================
-      إضافة وظيفة جديدة
-  ======================== */
-  function toggleAddJob() {
-    const form = document.getElementById("addJobForm");
-    form.style.display = form.style.display === "none" ? "block" : "none";
-  }
-
-  async function submitJob() {
-    const body = {
-      job_title: document.getElementById("job_title").value,
-      location: document.getElementById("location").value,
-      salary_range: document.getElementById("salary_range").value,
-      job_description: document.getElementById("job_description").value,
-      company_id: user.id
-    };
-
-    const res = await fetch("/.netlify/functions/add-job", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(body)
-    });
-
-    if (res.ok) {
-      alert("✔ تم إضافة الوظيفة بنجاح");
-      document.getElementById("addJobForm").reset();
-      loadCompanyJobs();
-    } else {
-      const data = await res.json();
-      alert("❌ فشل الإضافة: " + (data.message || "خطأ غير معروف"));
-    }
-  }
-
-  // 🔁 أول تحميل
   loadApplications();
-  loadCompanyJobs();
-
 </script>
 
 </body>
