@@ -15,7 +15,6 @@
       color: #fff;
     }
 
-    /* 🔹 الشريط العلوي */
     header {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
@@ -50,7 +49,6 @@
 
     nav a:hover { color: #ffd369; }
 
-    /* 🔹 نموذج تسجيل الدخول */
     .login-card {
       background: rgba(255, 255, 255, 0.12);
       padding: 35px;
@@ -85,7 +83,7 @@
       color: #fff;
     }
 
-    input::placeholder { color: #eee; }
+    input::placeholder { color: #ddd; }
 
     input:focus {
       outline: 2px solid #ffd369;
@@ -121,11 +119,13 @@
     }
 
     .alert.show { display: block; }
+
     .alert-success {
       background: rgba(40,167,69,0.2);
       color: #9bffb2;
       border: 1px solid #28a745;
     }
+
     .alert-error {
       background: rgba(220,53,69,0.2);
       color: #ffb1b1;
@@ -151,7 +151,7 @@
 </head>
 
 <body>
-  <!-- 🔹 الشريط العلوي -->
+
   <header>
     <div class="logo">💼 بوابة <span style="color:#fff;">الوظائف</span></div>
     <nav>
@@ -162,7 +162,6 @@
     </nav>
   </header>
 
-  <!-- 🔹 نموذج تسجيل الدخول -->
   <div class="login-card">
     <h2>🔐 تسجيل الدخول</h2>
     <p class="subtitle">مرحبًا بعودتك! سجل دخولك للوصول إلى حسابك</p>
@@ -170,8 +169,8 @@
     <div id="alertBox" class="alert"></div>
 
     <form id="loginForm">
-      <input id="email" type="email" name="email" placeholder="البريد الإلكتروني" required />
-      <input id="password" type="password" name="password" placeholder="كلمة المرور" required />
+      <input id="email" type="email" placeholder="البريد الإلكتروني" required />
+      <input id="password" type="password" placeholder="كلمة المرور" required />
       <button type="submit">تسجيل الدخول</button>
     </form>
 
@@ -180,7 +179,6 @@
 
   <footer>© 2025 بوابة الوظائف - جامعة جازان</footer>
 
-  <!-- 🔹 كود تسجيل الدخول -->
   <script>
     const alertBox = document.getElementById("alertBox");
 
@@ -211,23 +209,20 @@
           return;
         }
 
-        // 🔥 حفظ بيانات المستخدم في localStorage
+        // ✔️ حفظ بيانات المستخدم
         localStorage.setItem("user", JSON.stringify(result.user));
 
         showAlert("✔️ تم تسجيل الدخول بنجاح!", "success");
 
-        // 🔥 إعادة التوجيه حسب نوع الحساب
+        // 🔥 التوجيه حسب نوع الحساب
         setTimeout(() => {
           const type = result.user.user_type;
 
           if (type === "admin") {
             window.location.href = "admin-dashboard.html";
-          }
-          else if (type === "company") {
+          } else if (type === "company") {
             window.location.href = "company-dashboard.html";
-          }
-          else {
-            // طالب
+          } else {
             window.location.href = "jobs.html";
           }
         }, 1200);

@@ -82,6 +82,19 @@
 
 <h1>📘 إدارة الورش</h1>
 
+<script>
+/* ───────────────────────────────────────────────
+    🔐 حماية صفحة الأدمن + جلب admin_id الصحيح
+─────────────────────────────────────────────── */
+const admin = JSON.parse(localStorage.getItem("user"));
+const admin_id = admin?.id;
+
+if (!admin || admin.user_type !== "admin") {
+  alert("❌ غير مسموح بالدخول");
+  window.location.href = "login.html";
+}
+</script>
+
 <!-- إنشاء ورشة -->
 <div class="box">
   <h2>➕ إنشاء ورشة جديدة</h2>
@@ -107,8 +120,6 @@
     إنشاء ورشة جديدة
 ─────────────────────────────────────────────── */
 async function createWorkshop() {
-  const admin_id = localStorage.getItem("user_id");
-
   const data = {
     admin_id,
     title: title.value,
@@ -119,10 +130,16 @@ async function createWorkshop() {
     link: link.value
   };
 
-  await fetch("/.netlify/functions/add-workshop", {
+  const res = await fetch("/.netlify/functions/add-workshop", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
+
+  if (!res.ok) {
+    alert("❌ فشل إنشاء الورشة");
+    return;
+  }
 
   alert("✔️ تم إنشاء الورشة بنجاح");
   loadWorkshops();
@@ -153,9 +170,8 @@ async function loadWorkshops() {
         <td>${w.time}</td>
 
         <td>
-          <a class="students-btn"
-             href="admin-workshop-students.html?id=${w.id}">
-             👤 عرض الطلاب
+          <a class="students-btn" href="admin-workshop-students.html?id=${w.id}">
+            👤 عرض الطلاب
           </a>
         </td>
 
