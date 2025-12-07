@@ -33,37 +33,20 @@
       margin-bottom:5px;
     }
 
-    .status {
-      font-weight:bold;
-      margin-top:10px;
-    }
-
     .badge {
-      display:inline-block;
       padding:4px 10px;
       border-radius:20px;
       font-size:13px;
       margin-top:6px;
+      display:inline-block;
     }
 
-    .accepted { color:green; }
-    .rejected { color:red; }
-    .pending { color:orange; }
+    .badge-accepted { background:#e6f9ec; color:#1e7e34; }
+    .badge-rejected { background:#fdecea; color:#c82333; }
+    .badge-pending { background:#fff4e5; color:#e69500; }
 
-    .badge-accepted {
-      background:#e6f9ec;
-      color:#1e7e34;
-    }
-    .badge-rejected {
-      background:#fdecea;
-      color:#c82333;
-    }
-    .badge-pending {
-      background:#fff4e5;
-      color:#e69500;
-    }
-
-    .interview-box {
+    .interview-box,
+    .message-box {
       margin-top:10px;
       padding:10px;
       border-radius:8px;
@@ -72,10 +55,16 @@
       font-weight:600;
     }
 
+    .message-box {
+      background:#fff5e6;
+      border-color:#ffcf7d;
+      color:#b06d00;
+    }
+
     a {
       color:#007bff;
-      font-weight:600;
       text-decoration:none;
+      font-weight:600;
     }
   </style>
 </head>
@@ -86,7 +75,6 @@
 <div id="list"></div>
 
 <script>
-  // التأكد من تسجيل الدخول كطالب
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user || user.user_type !== "job_seeker") {
     alert("⚠️ يجب تسجيل الدخول كطالب.");
@@ -106,44 +94,37 @@
     }
 
     data.applications.forEach(app => {
-      const status = (app.status || "").toLowerCase();
-      let readableStatus = app.status || "غير محدد";
-      let statusClass = "pending";
+      
       let badgeClass = "badge-pending";
+      let readableStatus = "قيد المراجعة";
 
-      if (status === "accepted" || status === "مقبول") {
-        statusClass = "accepted";
-        badgeClass = "badge-accepted";
-        readableStatus = "مقبول";
-      } else if (status === "rejected" || status === "مرفوض") {
-        statusClass = "rejected";
-        badgeClass = "badge-rejected";
-        readableStatus = "مرفوض";
-      } else if (status === "مقابلة" || status === "interview") {
-        statusClass = "pending";
-        badgeClass = "badge-pending";
-        readableStatus = "مقابلة";
-      } else {
-        readableStatus = "قيد المراجعة";
-      }
-
-      const hasInterviewDate = !!app.interview_date;
+      if (app.status === "مقبول") { badgeClass = "badge-accepted"; readableStatus = "مقبول"; }
+      if (app.status === "مرفوض") { badgeClass = "badge-rejected"; readableStatus = "مرفوض"; }
+      if (app.status === "مقابلة") { badgeClass = "badge-pending"; readableStatus = "مقابلة"; }
 
       container.innerHTML += `
         <div class="card">
           <div class="title">💼 ${app.job_title} – ${app.company_name}</div>
-          <div>📍 ${app.location} | 💰 ${app.salary_range || "غير محدد"}</div>
-          <div>📅 تاريخ التقديم: ${app.created_at ? app.created_at.split("T")[0] : ""}</div>
 
-          <div class="status ${statusClass}">
+          <div>📍 ${app.location} | 💰 ${app.salary_range || "غير محدد"}</div>
+          <div>📅 تاريخ التقديم: ${app.created_at?.split("T")[0] || ""}</div>
+
+          <div style="margin-top:10px;">
             📝 الحالة:
             <span class="badge ${badgeClass}">${readableStatus}</span>
           </div>
 
-          ${hasInterviewDate ? `
+          ${app.interview_date ? `
             <div class="interview-box">
-              📅 تم تحديد موعد المقابلة:<br>
+              📅 موعد المقابلة:<br>
               ${app.interview_date}
+            </div>
+          ` : ""}
+
+          ${app.message_from_company ? `
+            <div class="message-box">
+              💬 <strong>رسالة من الشركة:</strong><br>
+              ${app.message_from_company}
             </div>
           ` : ""}
 
