@@ -47,9 +47,22 @@
       margin-top:6px;
     }
 
-    .badge-accepted { background:#e6f9ec; color:#28a745; }
-    .badge-rejected { background:#fdecea; color:#dc3545; }
-    .badge-pending  { background:#fff4e5; color:#e69500; }
+    .accepted { color:green; }
+    .rejected { color:red; }
+    .pending { color:orange; }
+
+    .badge-accepted {
+      background:#e6f9ec;
+      color:#1e7e34;
+    }
+    .badge-rejected {
+      background:#fdecea;
+      color:#c82333;
+    }
+    .badge-pending {
+      background:#fff4e5;
+      color:#e69500;
+    }
 
     .interview-box {
       margin-top:10px;
@@ -58,22 +71,6 @@
       background:#e8f4ff;
       border:1px solid #b6daff;
       font-weight:600;
-    }
-
-    .msg-box {
-      background:#e9f7ff;
-      padding:12px;
-      border-left:4px solid #007bff;
-      border-radius:10px;
-      margin-top:12px;
-      font-size:15px;
-      line-height:1.7;
-    }
-
-    .msg-time {
-      font-size:12px;
-      color:#555;
-      margin-top:5px;
     }
 
     a {
@@ -118,6 +115,9 @@
       margin-top:10px;
     }
 
+    button:hover {
+      background:#0056b3;
+    }
   </style>
 </head>
 
@@ -138,7 +138,7 @@
 <div id="list"></div>
 
 <script>
-  // التحقق من تسجيل الدخول كطالب
+  // التأكد من تسجيل الدخول كطالب
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user || user.user_type !== "job_seeker") {
     alert("⚠️ يجب تسجيل الدخول كطالب.");
@@ -161,6 +161,7 @@
     }
 
     for (let w of workshops) {
+      // التحقق من تسجيل الطالب
       const attRes = await fetch(
         `/.netlify/functions/check-workshop-attendance?student_id=${user.id}&workshop_id=${w.id}`
       );
@@ -218,66 +219,55 @@
 
     data.applications.forEach(app => {
       const status = (app.status || "").toLowerCase();
-      let readableStatus = "قيد المراجعة";
+      let readableStatus = app.status || "غير محدد";
       let badgeClass = "badge-pending";
 
       if (status === "accepted" || status === "مقبول") {
         badgeClass = "badge-accepted";
         readableStatus = "مقبول";
-      } 
-      else if (status === "rejected" || status === "مرفوض") {
+      } else if (status === "rejected" || status === "مرفوض") {
         badgeClass = "badge-rejected";
         readableStatus = "مرفوض";
-      } 
-      else if (status === "interview" || status === "مقابلة") {
+      } else if (status === "interview" || status === "مقابلة") {
+        badgeClass = "badge-pending";
         readableStatus = "مقابلة";
+      } else {
+        readableStatus = "قيد المراجعة";
       }
 
-      const interview = app.interview_date
-        ? `
-          <div class="interview-box">
-            📅 موعد المقابلة:<br>
-            ${new Date(app.interview_date).toLocaleString("ar-SA")}
-          </div>
-        `
-        : "";
-
-      const message = app.message_from_company
-        ? `
-          <div class="msg-box">
-            💬 <strong>رسالة من الشركة:</strong><br>
-            ${app.message_from_company}
-            <div class="msg-time">
-              🕓 بتاريخ:
-              ${new Date(app.message_date).toLocaleString("ar-SA")}
-            </div>
-          </div>
-        `
-        : "";
+      const hasInterviewDate = !!app.interview_date;
 
       container.innerHTML += `
         <div class="card">
           <div class="title">💼 ${app.job_title} – ${app.company_name}</div>
           <div>📍 ${app.location} | 💰 ${app.salary_range || "غير محدد"}</div>
-          <div>📅 تاريخ التقديم: ${app.created_at.split("T")[0]}</div>
+          <div>📅 تاريخ التقديم: ${app.created_at ? app.created_at.split("T")[0] : ""}</div>
 
           <div class="status">
             📝 الحالة:
             <span class="badge ${badgeClass}">${readableStatus}</span>
           </div>
 
-          ${interview}
-          ${message}
+          ${
+            hasInterviewDate
+              ? `
+            <div class="interview-box">
+              📅 تم تحديد موعد المقابلة:<br>
+              ${app.interview_date}
+            </div>
+          `
+              : ""
+          }
 
           ${
             app.cv_url
               ? `
-                <div style="margin-top:10px;">
-                  <a href="${app.cv_url}" target="_blank">
-                    📎 عرض السيرة الذاتية
-                  </a>
-                </div>
-              `
+            <div style="margin-top:10px;">
+              <a href="view-cv.html?file=${encodeURIComponent(app.cv_url)}" target="_blank">
+                📎 عرض السيرة الذاتية
+              </a>
+            </div>
+          `
               : ""
           }
         </div>
@@ -285,6 +275,7 @@
     });
   }
 
+  // تشغيل كل شيء
   loadWorkshops();
   loadApplications();
 </script>
