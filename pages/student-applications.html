@@ -90,13 +90,17 @@
 <div id="list"></div>
 
 <script>
-  // 🔐 التحقق من أن المستخدم طالب
+
+  // 🔐 التحقق من تسجيل الدخول كطالب
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user || user.user_type !== "job_seeker") {
     alert("⚠️ يجب تسجيل الدخول كطالب.");
     location.href = "login.html";
   }
 
+  // ======================================
+  //     تحميل الطلبات من السيرفر
+  // ======================================
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-student-applications?student_id=${user.id}`);
     const data = await res.json();
@@ -110,8 +114,11 @@
     }
 
     data.applications.forEach(app => {
-      const status = (app.status || "").toLowerCase();
 
+      // -------------------------
+      //         الحالة
+      // -------------------------
+      const status = (app.status || "").toLowerCase();
       let badgeClass = "pending";
       let readableStatus = "قيد المراجعة";
 
@@ -128,6 +135,9 @@
         readableStatus = "مقابلة";
       }
 
+      // -------------------------
+      //         المقابلة
+      // -------------------------
       const interviewBox = app.interview_date
         ? `
           <div class="interview-box">
@@ -137,23 +147,39 @@
         `
         : "";
 
+
+      // -------------------------
+      //         رسالة الشركة
+      // -------------------------
       const messageBox = app.message_from_company
         ? `
           <div class="msg-box">
-            💬 رسالة من الشركة:<br>
+            💬 <strong>رسالة من الشركة:</strong><br>
             ${app.message_from_company}
             <div class="msg-time">
-              🕓 بتاريخ: ${new Date(app.message_date).toLocaleString("ar-SA")}
+              🕓 بتاريخ: ${
+                app.message_date
+                  ? new Date(app.message_date).toLocaleString("ar-SA")
+                  : "—"
+              }
             </div>
           </div>
         `
         : "";
 
+
+      // -------------------------
+      //        بناء الكارد
+      // -------------------------
       container.innerHTML += `
         <div class="card">
           <div class="title">💼 ${app.job_title} – ${app.company_name}</div>
+
           <div>📍 ${app.location} | 💰 ${app.salary_range || "غير محدد"}</div>
-          <div>📅 تاريخ التقديم: ${app.created_at ? app.created_at.split("T")[0] : ""}</div>
+
+          <div>📅 تاريخ التقديم:
+            ${app.created_at ? app.created_at.split("T")[0] : ""}
+          </div>
 
           <div class="status">
             📝 الحالة:
