@@ -14,16 +14,50 @@ export async function handler(event) {
       salary_range
     } = body;
 
+    // التحقق من الحقول
     if (!company_id || !job_title || !job_description) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Missing required fields" })
+        body: JSON.stringify({ message: "❌ Missing required fields" })
       };
     }
 
+    // 🔥 1) الحصول على اسم الشركة من جدول users
+    const company = await sql`
+      SELECT full_name 
+      FROM users 
+      WHERE id = ${company_id}
+    `;
+
+    if (!company.length) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: "❌ Company not found" })
+      };
+    }
+
+    const company_name = company[0].full_name;
+
+    // 🔥 2) إدراج الوظيفة مع اسم الشركة
     const result = await sql`
-      INSERT INTO jobs (company_id, job_title, job_description, job_type, location, salary_range)
-      VALUES (${company_id}, ${job_title}, ${job_description}, ${job_type}, ${location}, ${salary_range})
+      INSERT INTO jobs (
+        company_id, 
+        company_name,
+        job_title, 
+        job_description, 
+        job_type, 
+        location, 
+        salary_range
+      )
+      VALUES (
+        ${company_id},
+        ${company_name},
+        ${job_title},
+        ${job_description},
+        ${job_type},
+        ${location},
+        ${salary_range}
+      )
       RETURNING *;
     `;
 
