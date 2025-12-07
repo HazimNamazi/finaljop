@@ -32,16 +32,17 @@
       display: flex; 
       gap: 20px; 
       align-items: center;
+      margin: 0;
+      padding: 0;
     }
     nav a { 
       color: #fff; 
       font-weight: 600; 
       text-decoration: none; 
     }
-    .username { 
-      color: #ffd369; 
-      font-weight: bold;
-    }
+    nav a:hover { text-decoration: underline; }
+
+    .username { color: #ffd369; font-weight: bold; }
 
     .logout-btn {
       background: #ff4f4f;
@@ -62,7 +63,7 @@
       border-radius: 16px; 
     }
 
-    .job-card, .workshop-card { 
+    .job-card { 
       background: rgba(255,255,255,0.15); 
       padding: 20px; 
       border-radius: 12px; 
@@ -70,9 +71,6 @@
     }
     .job-title { font-size: 20px; font-weight: 700; color: #fff; }
     .company-name { color: #ffd369; font-weight: 600; }
-
-    .workshop-title { font-size:18px; font-weight:700; color:#aaffc4; }
-    .attended-tag { background:#d9ffe5; color:#28a745; padding:5px 10px; border-radius:8px; }
 
     button { 
       background: linear-gradient(135deg, #007bff, #0056b3); 
@@ -99,15 +97,8 @@
 
 <section class="jobs-container">
 
-  <!-- الوظائف -->
   <h2>💼 الوظائف المتاحة</h2>
   <div id="jobsList">⏳ جارٍ تحميل الوظائف...</div>
-
-  <hr style="margin:40px 0;">
-
-  <!-- الورش -->
-  <h2>📘 ورش العمل المتاحة</h2>
-  <div id="workshopsList">⏳ جارٍ تحميل الورش...</div>
 
 </section>
 
@@ -123,11 +114,13 @@
     menu.innerHTML = `
       <li class="username">👋 ${user.full_name}</li>
       <li><a href="student-applications.html">📄 طلباتي</a></li>
+      <li><a href="workshops.html">📘 ورش العمل</a></li>
       <li><button class="logout-btn" onclick="logout()">تسجيل خروج</button></li>
     `;
   } else {
     menu.innerHTML = `
       <li><a href="jobs.html" style="color:#ffd369;">الوظائف</a></li>
+      <li><a href="workshops.html">📘 ورش العمل</a></li>
       <li><a href="login.html">تسجيل الدخول</a></li>
       <li><a href="signup.html">إنشاء حساب</a></li>
     `;
@@ -154,19 +147,24 @@
         return;
       }
 
-      jobsList.innerHTML = jobs.map(job => `
+      jobsList.innerHTML = jobs
+        .map(
+          job => `
         <div class="job-card">
           <div class="job-title">${job.job_title}</div>
           <div class="company-name">🏢 ${job.company_name}</div>
           <div>📍 ${job.location}</div>
           <div>💰 ${job.salary_range || "غير محدد"}</div>
           <p style="color:#eee;">${job.job_description}</p>
+
           <button onclick="applyJob(${job.id})">📄 التقديم على الوظيفة</button>
         </div>
-      `).join("");
+      `
+        )
+        .join("");
 
-    } catch {
-      jobsList.innerHTML = "<p style='text-align:center;color:red;'>⚠️ حدث خطأ أثناء تحميل الوظائف</p>";
+    } catch (err) {
+      jobsList.innerHTML = "<p style='color:red;text-align:center;'>⚠️ فشل تحميل الوظائف</p>";
     }
   }
 
@@ -175,73 +173,7 @@
     window.location.href = `apply.html?job_id=${id}`;
   }
 
-  /* ===========================
-      🔥 تحميل الورش
-  ============================ */
-  async function fetchWorkshops() {
-    const box = document.getElementById("workshopsList");
-
-    try {
-      const res = await fetch("/.netlify/functions/get-workshops");
-      const workshops = await res.json();
-
-      if (!workshops.length) {
-        box.innerHTML = "<p style='text-align:center;color:#ccc;'>🚫 لا توجد ورش حالياً</p>";
-        return;
-      }
-
-      box.innerHTML = "";
-
-      for (let w of workshops) {
-        let attended = false;
-
-        if (user) {
-          const att = await fetch(
-            `/.netlify/functions/check-workshop-attendance?student_id=${user.id}&workshop_id=${w.id}`
-          );
-          attended = (await att.json()).attended;
-        }
-
-        box.innerHTML += `
-          <div class="workshop-card">
-            <div class="workshop-title">📘 ${w.title}</div>
-            <div>📅 ${w.date} – ⏰ ${w.time}</div>
-            <div>📍 ${w.location || "اونلاين"}</div>
-
-            ${w.link ? `<a href="${w.link}" target="_blank" style="color:#aafff3;">🔗 رابط الورشة</a>` : ""}
-
-            <div style="margin-top:10px;">
-              ${
-                !user ? 
-                  `<p style="color:#ffd369;">⚠️ يرجى تسجيل الدخول لتسجيل الحضور</p>` :
-                attended ?
-                  `<span class="attended-tag">✔️ حضرت الورشة</span>` :
-                  `<button onclick="attendWorkshop(${w.id})">تسجيل حضور</button>`
-              }
-            </div>
-          </div>
-        `;
-      }
-
-    } catch {
-      box.innerHTML = "<p style='text-align:center;color:red;'>⚠️ فشل تحميل الورش</p>";
-    }
-  }
-
-  async function attendWorkshop(id) {
-    await fetch("/.netlify/functions/attend-workshop", {
-      method: "POST",
-      body: JSON.stringify({ student_id: user.id, workshop_id: id })
-    });
-
-    alert("✔ تم تسجيل حضور الورشة");
-    fetchWorkshops();
-  }
-
-  /* CALL FUNCTIONS */
   fetchJobs();
-  fetchWorkshops();
-
 </script>
 
 </body>

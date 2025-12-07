@@ -46,22 +46,9 @@
       margin-top:6px;
     }
 
-    .accepted { color:green; }
-    .rejected { color:red; }
-    .pending { color:orange; }
-
-    .badge-accepted {
-      background:#e6f9ec;
-      color:#1e7e34;
-    }
-    .badge-rejected {
-      background:#fdecea;
-      color:#c82333;
-    }
-    .badge-pending {
-      background:#fff4e5;
-      color:#e69500;
-    }
+    .accepted { background:#e6f9ec; color:#28a745; }
+    .rejected { background:#fdecea; color:#dc3545; }
+    .pending  { background:#fff4e5; color:#e69500; }
 
     .interview-box {
       margin-top:10px;
@@ -72,11 +59,28 @@
       font-weight:600;
     }
 
+    .msg-box {
+      background:#e9f7ff;
+      padding:12px;
+      border-left:4px solid #007bff;
+      border-radius:10px;
+      margin-top:12px;
+      font-size:15px;
+      line-height:1.7;
+    }
+
+    .msg-time {
+      font-size:13px;
+      color:#555;
+      margin-top:4px;
+    }
+
     a {
       color:#007bff;
       font-weight:600;
       text-decoration:none;
     }
+
   </style>
 </head>
 
@@ -86,7 +90,7 @@
 <div id="list"></div>
 
 <script>
-  // التأكد من تسجيل الدخول كطالب
+  // 🔐 التحقق من أن المستخدم طالب
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user || user.user_type !== "job_seeker") {
     alert("⚠️ يجب تسجيل الدخول كطالب.");
@@ -107,27 +111,43 @@
 
     data.applications.forEach(app => {
       const status = (app.status || "").toLowerCase();
-      let readableStatus = app.status || "غير محدد";
-      let statusClass = "pending";
-      let badgeClass = "badge-pending";
+
+      let badgeClass = "pending";
+      let readableStatus = "قيد المراجعة";
 
       if (status === "accepted" || status === "مقبول") {
-        statusClass = "accepted";
-        badgeClass = "badge-accepted";
+        badgeClass = "accepted";
         readableStatus = "مقبول";
-      } else if (status === "rejected" || status === "مرفوض") {
-        statusClass = "rejected";
-        badgeClass = "badge-rejected";
+      }
+      else if (status === "rejected" || status === "مرفوض") {
+        badgeClass = "rejected";
         readableStatus = "مرفوض";
-      } else if (status === "مقابلة" || status === "interview") {
-        statusClass = "pending";
-        badgeClass = "badge-pending";
+      }
+      else if (status === "interview" || status === "مقابلة") {
+        badgeClass = "pending";
         readableStatus = "مقابلة";
-      } else {
-        readableStatus = "قيد المراجعة";
       }
 
-      const hasInterviewDate = !!app.interview_date;
+      const interviewBox = app.interview_date
+        ? `
+          <div class="interview-box">
+            📅 موعد المقابلة:<br>
+            ${new Date(app.interview_date).toLocaleString("ar-SA")}
+          </div>
+        `
+        : "";
+
+      const messageBox = app.message_from_company
+        ? `
+          <div class="msg-box">
+            💬 رسالة من الشركة:<br>
+            ${app.message_from_company}
+            <div class="msg-time">
+              🕓 بتاريخ: ${new Date(app.message_date).toLocaleString("ar-SA")}
+            </div>
+          </div>
+        `
+        : "";
 
       container.innerHTML += `
         <div class="card">
@@ -135,25 +155,21 @@
           <div>📍 ${app.location} | 💰 ${app.salary_range || "غير محدد"}</div>
           <div>📅 تاريخ التقديم: ${app.created_at ? app.created_at.split("T")[0] : ""}</div>
 
-          <div class="status ${statusClass}">
+          <div class="status">
             📝 الحالة:
             <span class="badge ${badgeClass}">${readableStatus}</span>
           </div>
 
-          ${hasInterviewDate ? `
-            <div class="interview-box">
-              📅 تم تحديد موعد المقابلة:<br>
-              ${app.interview_date}
-            </div>
-          ` : ""}
+          ${interviewBox}
+          ${messageBox}
 
-          ${app.cv_url ? `
-            <div style="margin-top:10px;">
-              <a href="view-cv.html?file=${encodeURIComponent(app.cv_url)}" target="_blank">
-                📎 عرض السيرة الذاتية
-              </a>
-            </div>
-          ` : ""}
+          ${
+            app.cv_url
+              ? `<div style="margin-top:10px;">
+                  <a href="${app.cv_url}" target="_blank">📎 عرض السيرة الذاتية</a>
+                </div>`
+              : ""
+          }
         </div>
       `;
     });

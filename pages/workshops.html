@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📘 ورش العمل - بوابة الوظائف</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family:'Tajawal', sans-serif;
+      background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%);
+      margin:0;
+      padding:0;
+      color:white;
+    }
+
+    /* الشريط العلوي */
+    header {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 14px 40px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .logo {
+      font-size:22px;
+      font-weight:700;
+      color:#ffd369;
+    }
+
+    nav ul {
+      list-style:none;
+      display:flex;
+      gap:25px;
+      padding:0;
+      margin:0;
+    }
+
+    nav a {
+      color:white;
+      font-weight:600;
+      text-decoration:none;
+    }
+
+    nav a:hover {
+      text-decoration:underline;
+    }
+
+    .logout-btn {
+      background:#ff4f4f;
+      color:white;
+      padding:6px 12px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    /* محتوى الورش */
+    .workshops-container {
+      max-width:900px;
+      margin:50px auto;
+      background:rgba(255,255,255,0.1);
+      padding:30px;
+      border-radius:16px;
+      backdrop-filter: blur(8px);
+    }
+
+    h2 {
+      margin-bottom:25px;
+      color:#ffd369;
+      font-size:24px;
+    }
+
+    .workshop-card {
+      background:rgba(255,255,255,0.15);
+      padding:20px;
+      border-radius:12px;
+      margin-bottom:20px;
+      color:white;
+    }
+
+    .workshop-title {
+      font-size:20px;
+      font-weight:700;
+      color:#aaffc4;
+    }
+
+    .attended-tag {
+      background:#d9ffe5;
+      color:#28a745;
+      padding:6px 12px;
+      border-radius:8px;
+      display:inline-block;
+      margin-top:10px;
+      font-weight:700;
+    }
+
+    button {
+      background:linear-gradient(135deg, #007bff, #0056b3);
+      border:none;
+      padding:10px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      color:white;
+      margin-top:10px;
+    }
+
+    button:hover {
+      transform:scale(1.05);
+    }
+
+    a.link {
+      color:#aafff3;
+      font-weight:bold;
+      text-decoration:none;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- الشريط العلوي -->
+<header>
+  <div class="logo">📘 ورش العمل</div>
+
+  <nav>
+    <ul id="menu"></ul>
+  </nav>
+</header>
+
+<!-- صفحة الورش -->
+<section class="workshops-container">
+  <h2>📘 الورش المتاحة</h2>
+
+  <div id="workshopsList">⏳ جارٍ تحميل الورش...</div>
+</section>
+
+<script>
+  /* ===========================
+     القائمة حسب تسجيل الدخول
+  ============================ */
+  const user = JSON.parse(localStorage.getItem("user"));
+  const menu = document.getElementById("menu");
+
+  if (user) {
+    menu.innerHTML = `
+      <li><a href="jobs.html">💼 الوظائف</a></li>
+      <li><a href="student-applications.html">📄 طلباتي</a></li>
+      <li><button class="logout-btn" onclick="logout()">تسجيل خروج</button></li>
+    `;
+  } else {
+    menu.innerHTML = `
+      <li><a href="jobs.html">💼 الوظائف</a></li>
+      <li><a href="login.html">تسجيل الدخول</a></li>
+      <li><a href="signup.html">إنشاء حساب</a></li>
+    `;
+  }
+
+  function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  }
+
+  /* ===========================
+     تحميل الورش
+  ============================ */
+  async function fetchWorkshops() {
+    const box = document.getElementById("workshopsList");
+
+    try {
+      const res = await fetch("/.netlify/functions/get-workshops");
+      const workshops = await res.json();
+
+      if (!workshops.length) {
+        box.innerHTML = "<p style='text-align:center;color:#ccc;'>🚫 لا توجد ورش حالياً</p>";
+        return;
+      }
+
+      box.innerHTML = "";
+
+      for (let w of workshops) {
+        let attended = false;
+
+        if (user) {
+          const att = await fetch(
+            `/.netlify/functions/check-workshop-attendance?student_id=${user.id}&workshop_id=${w.id}`
+          );
+          attended = (await att.json()).attended;
+        }
+
+        box.innerHTML += `
+          <div class="workshop-card">
+            <div class="workshop-title">📘 ${w.title}</div>
+            <div>📅 ${w.date} – ⏰ ${w.time}</div>
+            <div>📍 ${w.location || "اونلاين"}</div>
+
+            ${w.link ? `<a class="link" href="${w.link}" target="_blank">🔗 رابط الورشة</a>` : ""}
+
+            <div style="margin-top:10px;">
+              ${
+                !user 
+                  ? `<p style="color:#ffd369;">⚠️ يجب تسجيل الدخول لحضور الورشة</p>`
+                  : attended
+                    ? `<span class="attended-tag">✔️ حضرت الورشة</span>`
+                    : `<button onclick="attendWorkshop(${w.id})">تسجيل حضور</button>`
+              }
+            </div>
+          </div>
+        `;
+      }
+
+    } catch {
+      box.innerHTML = "<p style='text-align:center;color:red;'>⚠️ فشل تحميل الورش</p>";
+    }
+  }
+
+  async function attendWorkshop(id) {
+    await fetch("/.netlify/functions/attend-workshop", {
+      method:"POST",
+      body: JSON.stringify({ student_id: user.id, workshop_id:id })
+    });
+
+    alert("✔ تم تسجيل حضور الورشة");
+    fetchWorkshops();
+  }
+
+  fetchWorkshops();
+</script>
+
+</body>
+</html>
