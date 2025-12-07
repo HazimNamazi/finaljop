@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>📬 الطلبات المقدمة</title>
+  <title>📬 لوحة الشركة</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
@@ -30,7 +30,6 @@
       color: white;
       cursor: pointer;
       border: none;
-      font-size: 14px;
     }
 
     .main-container {
@@ -114,6 +113,42 @@
     .btn-reject { background:#dc3545; color:white; }
     .btn-interview { background:#007bff; color:white; }
 
+    .job-card {
+      background:#fff;
+      margin-top:10px;
+      padding:15px;
+      border-radius:12px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .delete-job-btn {
+      background:#dc3545;
+      color:white;
+      margin-top:10px;
+      width:100%;
+    }
+
+    .add-job-form input,
+    .add-job-form textarea {
+      width:100%;
+      padding:10px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      margin:6px 0;
+      font-family:'Tajawal';
+    }
+
+    .add-job-form button {
+      width:100%;
+      background:#28a745;
+      color:white;
+    }
+
+    #addJobForm {
+      display:none;
+      margin-top:10px;
+    }
+
   </style>
 </head>
 
@@ -132,8 +167,24 @@
     <div id="applicationsList"></div>
   </div>
 
-</div>
+  <!-- الوظائف -->
+  <div class="container">
+    <h2>💼 وظائفك المنشورة</h2>
 
+    <button class="btn-interview" onclick="toggleAddJob()">➕ إضافة وظيفة</button>
+
+    <form id="addJobForm" class="add-job-form">
+      <input id="job_title" placeholder="المسمى الوظيفي" required>
+      <input id="location" placeholder="الموقع">
+      <input id="salary_range" placeholder="الراتب المتوقع">
+      <textarea id="job_description" placeholder="الوصف" rows="4"></textarea>
+      <button type="button" onclick="submitJob()">✔ إضافة الوظيفة</button>
+    </form>
+
+    <div id="companyJobsList"></div>
+  </div>
+
+</div>
 
 <script>
   const user = JSON.parse(localStorage.getItem("user"));
@@ -143,16 +194,16 @@
     location.href = "login.html";
   }
 
-  document.getElementById("companyName").innerText = user.full_name || "الشركة";
+  document.getElementById("companyName").innerText = user.full_name;
 
   function logout() {
     localStorage.removeItem("user");
     location.href = "login.html";
   }
 
-  /* ========================
-      تحميل الطلبات + الرسائل
-  ======================== */
+  /*===========================
+        تحميل الطلبات
+  ============================*/
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-company-applications?company_id=${user.id}`);
     const apps = await res.json();
@@ -161,14 +212,13 @@
     list.innerHTML = "";
 
     if (!apps.length) {
-      list.innerHTML = "<p>لا توجد طلبات حالياً.</p>";
+      list.innerHTML = "<p>لا توجد طلبات.</p>";
       return;
     }
 
     apps.forEach(app => {
-
-      const prevMessage = app.message_from_company
-        ? `<div class="prev-msg">💬 أحدث رسالة: <br>${app.message_from_company}</div>`
+      const lastMsg = app.message_from_company
+        ? `<div class="prev-msg">💬 آخر رسالة:<br>${app.message_from_company}</div>`
         : "";
 
       const cvHtml = app.cv_url
@@ -177,42 +227,33 @@
 
       list.innerHTML += `
         <div class="card">
-          <div><strong>${app.applicant_name}</strong> قدم على وظيفة: ${app.job_title}</div>
+          <div><strong>${app.applicant_name}</strong> • ${app.job_title}</div>
           <div>📧 ${app.email}</div>
-
           <div class="status">الحالة: ${app.status}</div>
+
           ${cvHtml}
+          ${lastMsg}
 
-          ${prevMessage}
-
-          <textarea 
-            class="message-box" 
-            placeholder="✏️ كتابة رسالة للطالب"
-            id="msg-${app.id}"
-          ></textarea>
-
-          <button class="msg-btn" onclick="sendMessage(${app.id})">💬 إرسال الرسالة</button>
+          <textarea id="msg-${app.id}" class="message-box" placeholder="✏️ اكتب رسالة للطالب..."></textarea>
+          <button class="msg-btn" onclick="sendMessage(${app.id})">💬 إرسال</button>
 
           <br><br>
 
           <button class="btn-accept" onclick="updateStatus(${app.id}, 'مقبول')">قبول</button>
           <button class="btn-reject" onclick="updateStatus(${app.id}, 'مرفوض')">رفض</button>
-          <button class="btn-interview" onclick="openModal(${app.id})">📅 مقابلة</button>
+          <button class="btn-interview" onclick="setInterview(${app.id})">📅 مقابلة</button>
         </div>
       `;
     });
   }
 
-  /* ========================
-      إرسال رسالة للطالب
-  ======================== */
+  /*===========================
+        إرسال رسالة
+  ============================*/
   async function sendMessage(application_id) {
     const message = document.getElementById(`msg-${application_id}`).value.trim();
 
-    if (!message) {
-      alert("⚠️ الرجاء كتابة الرسالة");
-      return;
-    }
+    if (!message) return alert("⚠️ اكتب رسالة أولاً");
 
     await fetch("/.netlify/functions/send-message", {
       method: "POST",
@@ -224,9 +265,9 @@
     loadApplications();
   }
 
-  /* ========================
-      تحديث حالة الطلب
-  ======================== */
+  /*===========================
+       تحديث حالة الطلب
+  ============================*/
   async function updateStatus(id, status) {
     await fetch("/.netlify/functions/update-application-status", {
       method: "POST",
@@ -234,11 +275,80 @@
       body: JSON.stringify({ id, status })
     });
 
-    alert("✔ تم تحديث الحالة");
+    alert("✔ تم التحديث");
     loadApplications();
   }
 
+  /*===========================
+        الوظائف - عرض
+  ============================*/
+  async function loadCompanyJobs() {
+    const res = await fetch(`/.netlify/functions/get-company-jobs?company_id=${user.id}`);
+    const jobs = await res.json();
+
+    const box = document.getElementById("companyJobsList");
+    box.innerHTML = "";
+
+    if (!jobs.length) {
+      box.innerHTML = "<p>لا توجد وظائف.</p>";
+      return;
+    }
+
+    jobs.forEach(job => {
+      box.innerHTML += `
+        <div class="job-card">
+          <strong>${job.job_title}</strong>
+          <div>📍 ${job.location}</div>
+          <div>💰 ${job.salary_range}</div>
+
+          <button class="delete-job-btn" onclick="deleteJob(${job.id})">🗑 حذف الوظيفة</button>
+        </div>
+      `;
+    });
+  }
+
+  /*===========================
+        إضافة وظيفة
+  ============================*/
+  function toggleAddJob() {
+    const form = document.getElementById("addJobForm");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  }
+
+  async function submitJob() {
+    const body = {
+      company_id: user.id,
+      job_title: document.getElementById("job_title").value,
+      job_description: document.getElementById("job_description").value,
+      location: document.getElementById("location").value,
+      salary_range: document.getElementById("salary_range").value
+    };
+
+    await fetch("/.netlify/functions/add-job", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(body)
+    });
+
+    alert("✔ تمت الإضافة");
+    loadCompanyJobs();
+  }
+
+  /*===========================
+        حذف وظيفة
+  ============================*/
+  async function deleteJob(id) {
+    if (!confirm("هل أنت متأكد؟")) return;
+
+    await fetch(`/.netlify/functions/delete-job?id=${id}`);
+    alert("✔ تم الحذف");
+    loadCompanyJobs();
+  }
+
+  /* CALL */
   loadApplications();
+  loadCompanyJobs();
+
 </script>
 
 </body>
