@@ -9,12 +9,10 @@ export async function handler(event) {
       company_id,
       job_title,
       job_description,
-      job_type,
       location,
       salary_range
     } = body;
 
-    // التحقق من الحقول
     if (!company_id || !job_title || !job_description) {
       return {
         statusCode: 400,
@@ -22,11 +20,8 @@ export async function handler(event) {
       };
     }
 
-    // 🔥 1) الحصول على اسم الشركة من جدول users
     const company = await sql`
-      SELECT full_name 
-      FROM users 
-      WHERE id = ${company_id}
+      SELECT full_name FROM users WHERE id = ${company_id};
     `;
 
     if (!company.length) {
@@ -38,15 +33,13 @@ export async function handler(event) {
 
     const company_name = company[0].full_name;
 
-    // 🔥 2) إدراج الوظيفة مع اسم الشركة
     const result = await sql`
       INSERT INTO jobs (
-        company_id, 
+        company_id,
         company_name,
-        job_title, 
-        job_description, 
-        job_type, 
-        location, 
+        job_title,
+        job_description,
+        location,
         salary_range
       )
       VALUES (
@@ -54,7 +47,6 @@ export async function handler(event) {
         ${company_name},
         ${job_title},
         ${job_description},
-        ${job_type},
         ${location},
         ${salary_range}
       )
@@ -63,10 +55,7 @@ export async function handler(event) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        success: true,
-        job: result[0]
-      })
+      body: JSON.stringify({ success: true, job: result[0] })
     };
 
   } catch (err) {
