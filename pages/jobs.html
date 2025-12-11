@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-text="page_title">💼 الوظائف المتاحة</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -181,6 +180,7 @@ const translations = {
 
 let currentLang = "ar";
 
+/* 🔄 إصلاح مشكلة اللغة */
 document.getElementById("langToggle").onclick = () => {
   currentLang = currentLang === "ar" ? "en" : "ar";
   document.documentElement.lang = currentLang;
@@ -190,20 +190,24 @@ document.getElementById("langToggle").onclick = () => {
     el.textContent = translations[currentLang][el.dataset.text];
   });
 
+  document.title = translations[currentLang].page_title;
+
   document.getElementById("langToggle").textContent =
     currentLang === "ar" ? "EN" : "AR";
 
   renderMenu();
+  fetchJobs(); // 🔥 هذا هو الحل الحقيقي
 };
 
-/* 👤 القائمة العلوية */
+/* 👤 القائمة */
 const user = JSON.parse(localStorage.getItem("user"));
 const menu = document.getElementById("menu");
 
 function renderMenu() {
-  if (user) {
+  if (user && user.user_type === "job_seeker") {
     menu.innerHTML = `
-      <li>👋 ${user.full_name} – ${user.department}</li>
+      <li>👋 ${user.full_name} – ${user.department || ""}</li>
+      <li><a href="student-applications.html" data-text="my_applications">${translations[currentLang].my_applications}</a></li>
       <li><button class="logout-btn" onclick="logout()" data-text="logout">${translations[currentLang].logout}</button></li>
     `;
   } else {
@@ -213,6 +217,7 @@ function renderMenu() {
     `;
   }
 }
+
 renderMenu();
 
 function logout() {
@@ -240,14 +245,14 @@ async function fetchJobs() {
       return `
         <div class="job-card">
           <div class="job-title">${job.job_title}</div>
-          <div class="company-email">📧 ${job.company_email}</div>
-          <div>🏢 ${job.company_name}</div>
-          <div>📍 ${job.location}</div>
-          <div>📘 القسم المطلوب: ${job.department}</div>
-          <div>💰 الراتب: ${job.salary_range}</div>
+          <div class="company-email">📧 ${job.company_email || "-"}</div>
+          <div>🏢 ${job.company_name || "-"}</div>
+          <div>📍 ${job.location || "-"}</div>
+          <div>📘 القسم: ${job.department || "غير محدد"}</div>
+          <div>💰 الراتب: ${job.salary_range || "-"}</div>
 
           ${
-            user && !canApply 
+            user && !canApply
               ? `<div class="label-warning">⚠️ الوظيفة متاحة فقط لقسم: ${job.department}</div>`
               : ""
           }
@@ -271,6 +276,7 @@ function applyJob(id) {
   window.location.href = `apply.html?job_id=${id}`;
 }
 
+/* تشغيل أولي */
 fetchJobs();
 </script>
 
