@@ -4,37 +4,60 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-text="page_title">💼 الوظائف المتاحة</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     body {
       font-family: 'Tajawal', sans-serif;
       background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%);
-      color: white;
       margin: 0;
       padding: 0;
+      color: white;
     }
 
     header {
       background: rgba(255,255,255,0.1);
       backdrop-filter: blur(10px);
-      padding: 14px 40px;
+      padding: 14px 35px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    .logo { font-weight: 700; color: #ffd369; font-size: 20px; }
+    .logo {
+      font-weight: bold;
+      font-size: 20px;
+      color: #ffd369;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+      padding: 0;
+      margin: 0;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    nav a:hover {
+      color: #ffd369;
+    }
 
     .language-btn {
       cursor: pointer;
       background: none;
       border: 1px solid #ffd369;
-      padding: 6px 12px;
+      padding: 4px 12px;
       color: #ffd369;
       border-radius: 6px;
-      font-size: 13px;
+      font-size: 12px;
       transition: 0.3s;
     }
 
@@ -43,42 +66,20 @@
       color: #001f3f;
     }
 
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      margin: 0;
-    }
-
-    nav a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    nav a:hover { color: #ffd369; }
-
-    .username {
-      color: #ffd369;
-      font-weight: bold;
-    }
-
     .logout-btn {
       background: #ff4f4f;
       color: white;
-      border-radius: 6px;
+      font-weight: bold;
       padding: 6px 12px;
+      border-radius: 6px;
       border: none;
       cursor: pointer;
-      font-weight: bold;
     }
 
     .jobs-container {
       max-width: 900px;
-      margin: 60px auto;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(8px);
+      margin: 70px auto;
+      background: rgba(255,255,255,0.10);
       padding: 30px;
       border-radius: 16px;
     }
@@ -90,26 +91,53 @@
       margin-bottom: 20px;
     }
 
-    .job-title { font-size: 20px; font-weight: 700; color: #fff; }
-    .company-name { color: #ffd369; font-weight: 600; }
+    .job-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #ffd369;
+    }
 
-    .apply-btn {
+    .company-email {
+      color: #cde7ff;
+      font-size: 14px;
+    }
+
+    .label-warning {
+      background: #ffcccc;
+      color: #b10000;
+      padding: 6px;
+      border-radius: 6px;
+      margin-top: 10px;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    button.apply-btn {
       background: #007bff;
       color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
       border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
+      margin-top: 12px;
       cursor: pointer;
-      font-size: 15px;
-      margin-top: 10px;
-      transition: 0.3s;
+      transition: 0.2s;
     }
 
-    .apply-btn:hover { background: #005ecb; }
-    .disabled-btn {
-      background: #777;
-      cursor: not-allowed;
+    button.apply-btn:hover {
+      transform: scale(1.03);
+      background: #005fcc;
     }
+
+    /* دعم LTR */
+    html[dir="ltr"] nav ul {
+      flex-direction: row-reverse;
+    }
+    html[dir="ltr"] .logo {
+      margin-right: auto;
+    }
+
   </style>
 </head>
 
@@ -131,9 +159,9 @@
 </section>
 
 <script>
-/* ============================================
-      🌍 الترجمة AR / EN
-============================================ */
+/* ---------------------------
+     🌍 الترجمة AR / EN
+--------------------------- */
 const translations = {
   ar: {
     page_title: "💼 الوظائف المتاحة",
@@ -142,13 +170,11 @@ const translations = {
     loading: "⏳ جارٍ تحميل الوظائف...",
     no_jobs: "🚫 لا توجد وظائف",
     apply: "📄 التقديم على الوظيفة",
-    contact: "تواصل معنا",
+    my_applications: "طلباتي 📄",
+    workshops: "ورش العمل 📘",
     about: "من نحن؟",
+    contact: "تواصل معنا",
     logout: "تسجيل خروج",
-    login: "تسجيل الدخول",
-    signup: "إنشاء حساب",
-    my_applications: "📄 طلباتي",
-    workshops: "📘 ورش العمل"
   },
   en: {
     page_title: "💼 Available Jobs",
@@ -157,13 +183,11 @@ const translations = {
     loading: "⏳ Loading jobs...",
     no_jobs: "🚫 No jobs available",
     apply: "📄 Apply Now",
-    contact: "Contact Us",
+    my_applications: "My Applications 📄",
+    workshops: "Workshops 📘",
     about: "About Us",
+    contact: "Contact Us",
     logout: "Logout",
-    login: "Login",
-    signup: "Create Account",
-    my_applications: "📄 My Applications",
-    workshops: "📘 Workshops"
   }
 };
 
@@ -178,35 +202,34 @@ document.getElementById("langToggle").onclick = () => {
     el.textContent = translations[currentLang][el.dataset.text];
   });
 
-  document.title = translations[currentLang].page_title;
-  renderMenu();
-
   document.getElementById("langToggle").textContent =
     currentLang === "ar" ? "EN" : "AR";
+
+  renderMenu();
 };
 
-/* ============================================
-      👤 قائمة المستخدم
-============================================ */
+/* ---------------------------
+     👤 القائمة العلوية
+--------------------------- */
 const user = JSON.parse(localStorage.getItem("user"));
 const menu = document.getElementById("menu");
 
 function renderMenu() {
   if (user && user.user_type === "job_seeker") {
     menu.innerHTML = `
-      <li class="username">👋 ${user.full_name} — ${user.department || ""}</li>
-      <li><a data-text="my_applications" href="student-applications.html">${translations[currentLang].my_applications}</a></li>
-      <li><a data-text="workshops" href="workshops.html">${translations[currentLang].workshops}</a></li>
-      <li><a data-text="about" href="about.html">${translations[currentLang].about}</a></li>
-      <li><a data-text="contact" href="contact.html">${translations[currentLang].contact}</a></li>
+      <li>👋 ${user.full_name} – ${user.department || ""}</li>
+      <li><a href="student-applications.html" data-text="my_applications">${translations[currentLang].my_applications}</a></li>
+      <li><a href="workshops.html" data-text="workshops">${translations[currentLang].workshops}</a></li>
+      <li><a href="about.html" data-text="about">${translations[currentLang].about}</a></li>
+      <li><a href="contact.html" data-text="contact">${translations[currentLang].contact}</a></li>
       <li><button class="logout-btn" onclick="logout()" data-text="logout">${translations[currentLang].logout}</button></li>
     `;
   } else {
     menu.innerHTML = `
-      <li><a data-text="about" href="about.html">${translations[currentLang].about}</a></li>
-      <li><a data-text="contact" href="contact.html">${translations[currentLang].contact}</a></li>
-      <li><a href="login.html" data-text="login">${translations[currentLang].login}</a></li>
-      <li><a href="signup.html" data-text="signup">${translations[currentLang].signup}</a></li>
+      <li><a href="about.html" data-text="about">${translations[currentLang].about}</a></li>
+      <li><a href="contact.html" data-text="contact">${translations[currentLang].contact}</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="signup.html">Signup</a></li>
     `;
   }
 }
@@ -214,12 +237,12 @@ renderMenu();
 
 function logout() {
   localStorage.removeItem("user");
-  window.location.href = "login.html";
+  location.href = "login.html";
 }
 
-/* ============================================
-      🔥 تحميل الوظائف
-============================================ */
+/* ---------------------------
+     🔥 تحميل الوظائف
+--------------------------- */
 async function fetchJobs() {
   const jobsList = document.getElementById("jobsList");
 
@@ -229,50 +252,48 @@ async function fetchJobs() {
     const jobs = data.jobs || [];
 
     if (!jobs.length) {
-      jobsList.innerHTML = `<p style="text-align:center;color:#ccc;">${translations[currentLang].no_jobs}</p>`;
+      jobsList.innerHTML = `<p>${translations[currentLang].no_jobs}</p>`;
       return;
     }
 
-    jobsList.innerHTML = "";
+    jobsList.innerHTML = jobs.map(job => {
+      const deadline = job.application_deadline ? new Date(job.application_deadline).toLocaleString("ar-SA") : "—";
+      const interview = job.interview_time ? new Date(job.interview_time).toLocaleString("ar-SA") : "—";
 
-    jobs.forEach(job => {
+      let restriction = "";
+      if (job.restrict_to_department && user?.department !== job.department) {
+        restriction = `<div class="label-warning">⚠️ الوظيفة متاحة فقط لقسم: ${job.department}</div>`;
+      }
+
       const canApply =
         !job.restrict_to_department ||
         (user && user.department === job.department);
 
-      jobsList.innerHTML += `
+      return `
         <div class="job-card">
           <div class="job-title">${job.job_title}</div>
-          <div class="company-name">🏢 ${job.company_name}</div>
-          <div>📧 ${job.company_email || "غير متوفر"}</div>
+          <div class="company-email">📧 ${job.company_email || "—"}</div>
+          <div>🏢 ${job.company_name}</div>
+          <div>📍 ${job.location || "—"}</div>
           <div>📘 القسم: ${job.department || "عام"}</div>
-          <div>⏳ آخر موعد للتقديم: ${job.application_deadline || "غير محدد"}</div>
-          <div>🕒 وقت المقابلة: ${job.interview_time || "غير محدد"}</div>
-          <div>📍 ${job.location}</div>
-          <div>💰 ${job.salary_range || "غير محدد"}</div>
+          <div>⏳ آخر موعد للتقديم: ${deadline}</div>
+          <div>🕒 وقت المقابلة: ${interview}</div>
+          <div>💰 الراتب: ${job.salary_range || "—"}</div>
 
-          ${
-            job.restrict_to_department
-              ? `<p style="color:red;font-weight:bold;">⚠ الوظيفة متاحة فقط لقسم: ${job.department}</p>`
-              : ""
-          }
+          ${restriction}
 
-          ${
-            canApply
-              ? `<button class="apply-btn" onclick="applyJob(${job.id})">${translations[currentLang].apply}</button>`
-              : `<button class="apply-btn disabled-btn">غير مسموح لك بالتقديم</button>`
-          }
+          ${canApply ? `<button class="apply-btn" onclick="applyJob(${job.id})">${translations[currentLang].apply}</button>` : ""}
         </div>
       `;
-    });
+    }).join("");
 
   } catch (err) {
-    jobsList.innerHTML = `<p style="color:red;text-align:center;">⚠️ فشل تحميل الوظائف</p>`;
+    jobsList.innerHTML = `<p style="color:red;">⚠️ فشل تحميل الوظائف</p>`;
   }
 }
 
 function applyJob(id) {
-  if (!user) return alert("⚠️ يجب تسجيل الدخول أولاً");
+  if (!user) return alert("⚠️ يجب تسجيل الدخول أولًا");
   window.location.href = `apply.html?job_id=${id}`;
 }
 

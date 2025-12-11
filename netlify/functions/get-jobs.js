@@ -4,85 +4,54 @@ export async function handler(event) {
   try {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
-    const { 
-      page = 1, 
-      limit = 10,
-      search = "",
-      location = "",
-      job_type = "",
-      company = ""
+    const {
+      page = 1,
+      limit = 20
     } = event.queryStringParameters || {};
 
     const offset = (page - 1) * limit;
 
-    let query = `
-    SELECT 
-    id,
-    job_title,
-    company_name,
-    company_email,
-    job_description,
-    job_type,
-    location,
-    salary_range,
-    department,
-    restrict_to_department,
-    interview_time,
-    application_deadline,
-    created_at
-  FROM jobs
-  
-      WHERE 1 = 1
+    const query = `
+      SELECT 
+        id,
+        job_title,
+        company_id,
+        company_name,
+        company_email,
+        job_description,
+        job_type,
+        location,
+        salary_range,
+        department,
+        restrict_to_department,
+        interview_time,
+        application_deadline,
+        created_at
+      FROM jobs
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
-    const params = [];
-
-    if (search) {
-      query += ` AND (job_title ILIKE $${params.length + 1} OR job_description ILIKE $${params.length + 1})`;
-      params.push(`%${search}%`);
-    }
-
-    if (location) {
-      query += ` AND location ILIKE $${params.length + 1}`;
-      params.push(`%${location}%`);
-    }
-
-    if (job_type) {
-      query += ` AND job_type ILIKE $${params.length + 1}`;
-      params.push(`%${job_type}%`);
-    }
-
-    if (company) {
-      query += ` AND company_name ILIKE $${params.length + 1}`;
-      params.push(`%${company}%`);
-    }
-
-    query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
-
-    const result = await sql(query, params);
+    const jobs = await sql(query);
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         success: true,
-        page: Number(page),
-        limit: Number(limit),
-        count: result.length,
-        jobs: result
-      }),
+        jobs
+      })
     };
 
   } catch (error) {
-    console.error("❌ Error loading jobs:", error);
+    console.error("❌ Error:", error);
     return {
       statusCode: 500,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         success: false,
-        message: "Internal Server Error",
+        message: "Server error",
         error: error.message
-      }),
+      })
     };
   }
 }
