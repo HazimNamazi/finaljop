@@ -16,20 +16,22 @@ export async function handler(event) {
     const offset = (page - 1) * limit;
 
     let query = `
-      SELECT 
-        id,
-        job_title,
-        company_name,
-        job_description,
-        job_type,
-        location,
-        salary_range,
-        department,
-        restrict_to_department,
-        interview_time,
-        application_deadline,
-        created_at
-      FROM jobs
+    SELECT 
+    id,
+    job_title,
+    company_name,
+    company_email,
+    job_description,
+    job_type,
+    location,
+    salary_range,
+    department,
+    restrict_to_department,
+    interview_time,
+    application_deadline,
+    created_at
+  FROM jobs
+  
       WHERE 1 = 1
     `;
 
