@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>🏢 إدارة الشركات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Tajawal', sans-serif;
+      background: #f4f6f9;
+    }
+    .navbar {
+      background: #001f3f;
+      color: #fff;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar h2 { margin: 0; }
+    .navbar a {
+      color: #ffd369;
+      text-decoration: none;
+      margin-left: 25px;
+      font-weight: bold;
+    }
+    .navbar a:hover { color: #fff; }
+    .logout-btn {
+      background: #dc3545;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .container {
+      padding: 30px;
+      max-width: 1100px;
+      margin: auto;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #00509d;
+      color: #fff;
+    }
+    .btn-delete {
+      background: #dc3545;
+      color: white;
+      padding: 6px 12px;
+      border:none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <h2>🏢 إدارة الشركات</h2>
+  <div>
+    <a href="admin-dashboard.html">لوحة التحكم</a>
+    <a href="admin-workshops.html">📘 الورش</a>
+    <a href="admin-students.html">👨‍🎓 الطلاب</a>
+    <a href="admin-companies.html">🏢 الشركات</a>
+    <a href="admin-jobs.html">💼 الوظائف</a>
+  </div>
+  <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+</div>
+
+<div class="container">
+  <div class="box">
+    <h3>🏢 جميع الشركات</h3>
+    <table id="companiesTable"></table>
+  </div>
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user || user.user_type !== "admin") {
+  alert("❌ غير مصرح بدخول هذه الصفحة");
+  window.location.href = "login.html";
+}
+function logout() {
+  localStorage.removeItem("user");
+  window.location.href = "login.html";
+}
+
+async function loadCompanies() {
+  const res = await fetch("/.netlify/functions/admin-get-companies");
+  const companies = await res.json();
+
+  let html = `
+    <tr>
+      <th>اسم الشركة</th>
+      <th>البريد</th>
+      <th>رقم الجوال</th>
+      <th>تاريخ التسجيل</th>
+    </tr>
+  `;
+
+  companies.forEach(c => {
+    html += `
+      <tr>
+        <td>${c.full_name}</td>
+        <td>${c.email}</td>
+        <td>${c.phone || "—"}</td>
+        <td>${c.created_at || "—"}</td>
+      </tr>`;
+  });
+
+  document.getElementById("companiesTable").innerHTML = html;
+}
+
+loadCompanies();
+</script>
+
+</body>
+</html>

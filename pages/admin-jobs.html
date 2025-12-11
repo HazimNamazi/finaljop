@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>💼 إدارة الوظائف</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Tajawal', sans-serif;
+      background: #f4f6f9;
+    }
+    .navbar {
+      background: #001f3f;
+      color: #fff;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar h2 { margin: 0; }
+    .navbar a {
+      color: #ffd369;
+      text-decoration: none;
+      margin-left: 25px;
+      font-weight: bold;
+    }
+    .navbar a:hover { color: #fff; }
+    .logout-btn {
+      background: #dc3545;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .container {
+      padding: 30px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #00509d;
+      color: #fff;
+    }
+    .btn-delete {
+      background: #dc3545;
+      color: white;
+      padding: 6px 12px;
+      border:none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <h2>💼 إدارة الوظائف</h2>
+  <div>
+    <a href="admin-dashboard.html">لوحة التحكم</a>
+    <a href="admin-workshops.html">📘 الورش</a>
+    <a href="admin-students.html">👨‍🎓 الطلاب</a>
+    <a href="admin-companies.html">🏢 الشركات</a>
+    <a href="admin-jobs.html">💼 الوظائف</a>
+  </div>
+  <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+</div>
+
+<div class="container">
+  <div class="box">
+    <h3>💼 جميع الوظائف</h3>
+    <table id="jobsTable"></table>
+  </div>
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user || user.user_type !== "admin") {
+  alert("❌ غير مصرح بدخول هذه الصفحة");
+  window.location.href = "login.html";
+}
+function logout() {
+  localStorage.removeItem("user");
+  window.location.href = "login.html";
+}
+
+async function loadJobs() {
+  const res = await fetch("/.netlify/functions/admin-get-all-jobs");
+  const jobs = await res.json();
+
+  let html = `
+    <tr>
+      <th>المسمى الوظيفي</th>
+      <th>الشركة</th>
+      <th>القسم</th>
+      <th>الموقع</th>
+      <th>الراتب</th>
+      <th>تاريخ الإضافة</th>
+      <th>حذف</th>
+    </tr>
+  `;
+
+  jobs.forEach(j => {
+    html += `
+      <tr>
+        <td>${j.job_title}</td>
+        <td>${j.company_name}</td>
+        <td>${j.department || "عام"}</td>
+        <td>${j.location || "—"}</td>
+        <td>${j.salary_range || "—"}</td>
+        <td>${j.created_at || "—"}</td>
+        <td><button class="btn-delete" onclick="deleteJob(${j.id})">🗑 حذف</button></td>
+      </tr>`;
+  });
+
+  document.getElementById("jobsTable").innerHTML = html;
+}
+
+async function deleteJob(id) {
+  if (!confirm("هل أنت متأكد من حذف هذه الوظيفة؟")) return;
+  await fetch(`/.netlify/functions/delete-job?id=${id}`);
+  alert("✔ تم حذف الوظيفة");
+  loadJobs();
+}
+
+loadJobs();
+</script>
+
+</body>
+</html>

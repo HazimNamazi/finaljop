@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>📘 إدارة الورش - الأدمن</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Tajawal', sans-serif;
+      background: #f4f6f9;
+    }
+    .navbar {
+      background: #001f3f;
+      color: #fff;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar h2 { margin: 0; }
+    .navbar a {
+      color: #ffd369;
+      text-decoration: none;
+      margin-left: 25px;
+      font-weight: bold;
+    }
+    .navbar a:hover { color: #fff; }
+    .logout-btn {
+      background: #dc3545;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .container {
+      padding: 30px;
+      max-width: 1100px;
+      margin: auto;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: 'Tajawal';
+    }
+    button {
+      padding: 10px 20px;
+      background: #28a745;
+      color: #fff;
+      border:none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { opacity: 0.9; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #00509d;
+      color: #fff;
+    }
+    .students-btn {
+      background: #17a2b8;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <h2>📘 إدارة الورش</h2>
+  <div>
+    <a href="admin-dashboard.html">لوحة التحكم</a>
+    <a href="admin-workshops.html">📘 الورش</a>
+    <a href="admin-students.html">👨‍🎓 الطلاب</a>
+    <a href="admin-companies.html">🏢 الشركات</a>
+    <a href="admin-jobs.html">💼 الوظائف</a>
+  </div>
+  <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+</div>
+
+<div class="container">
+
+  <div class="box">
+    <h3>➕ إنشاء ورشة جديدة</h3>
+    <input id="title" placeholder="عنوان الورشة">
+    <textarea id="desc" placeholder="الوصف"></textarea>
+    <input id="date" type="date">
+    <input id="time" type="time">
+    <input id="location" placeholder="الموقع">
+    <input id="link" placeholder="رابط الورشة (اختياري)">
+    <button onclick="createWorkshop()">إنشاء الورشة</button>
+  </div>
+
+  <div class="box">
+    <h3>📚 جميع الورش</h3>
+    <table id="workshopsTable"></table>
+  </div>
+
+</div>
+
+<script>
+const admin = JSON.parse(localStorage.getItem("user"));
+const admin_id = admin?.id;
+
+if (!admin || admin.user_type !== "admin") {
+  alert("❌ غير مسموح بالدخول");
+  window.location.href = "login.html";
+}
+
+function logout() {
+  localStorage.removeItem("user");
+  window.location.href = "login.html";
+}
+
+async function createWorkshop() {
+  const data = {
+    admin_id,
+    title: title.value.trim(),
+    description: desc.value.trim(),
+    date: date.value,
+    time: time.value,
+    location: location.value.trim(),
+    link: link.value.trim()
+  };
+
+  if (!data.title || !data.date) {
+    alert("⚠️ عنوان الورشة والتاريخ مطلوبان");
+    return;
+  }
+
+  const res = await fetch("/.netlify/functions/add-workshop", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  if (!res.ok) {
+    alert("❌ فشل إنشاء الورشة");
+    return;
+  }
+
+  alert("✔️ تم إنشاء الورشة بنجاح");
+  title.value = "";
+  desc.value = "";
+  date.value = "";
+  time.value = "";
+  location.value = "";
+  link.value = "";
+  loadWorkshops();
+}
+
+async function loadWorkshops() {
+  const res = await fetch("/.netlify/functions/get-workshops");
+  const workshops = await res.json();
+
+  let html = `
+    <tr>
+      <th>العنوان</th>
+      <th>التاريخ</th>
+      <th>الوقت</th>
+      <th>الطلاب</th>
+      <th>حذف</th>
+    </tr>
+  `;
+
+  workshops.forEach(w => {
+    html += `
+      <tr>
+        <td>${w.title}</td>
+        <td>${w.date}</td>
+        <td>${w.time}</td>
+        <td>
+          <a class="students-btn" href="admin-workshop-students.html?id=${w.id}">
+            👤 عرض الطلاب
+          </a>
+        </td>
+        <td>
+          <button class="delete-btn" onclick="deleteWorkshop(${w.id})">🗑 حذف</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("workshopsTable").innerHTML = html;
+}
+
+async function deleteWorkshop(id) {
+  if (!confirm("هل أنت متأكد من حذف هذه الورشة؟")) return;
+
+  await fetch("/.netlify/functions/delete-workshop?id=" + id);
+  alert("🗑 تم حذف الورشة");
+  loadWorkshops();
+}
+
+loadWorkshops();
+</script>
+
+</body>
+</html>
