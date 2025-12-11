@@ -34,13 +34,14 @@ export async function handler(event) {
 
     // 🔥 نرجّع فقط الاسم + القسم + نوع المستخدم
     const safeUser = {
-      id: user.id,                  // ← أهم سطر
+      id: user.id,
       full_name: user.full_name,
       email: user.email,
-      user_type: user.user_type,
-      department: user.department
+      department: user.department,
+      user_type: user.user_type   // ← مهم
     };
     
+
 
     return {
       statusCode: 200,
