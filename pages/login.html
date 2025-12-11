@@ -3,282 +3,260 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-text="page_title">🔐 تسجيل الدخول - بوابة الوظائف</title>
+  <title data-text="page_title">🔐 تسجيل الدخول</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
+      margin: 0;
+      padding: 0;
       font-family: 'Tajawal', sans-serif;
-      background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%);
+      background: linear-gradient(135deg, #003566, #00509d);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       color: #fff;
     }
 
+    /* ========== الشريط العلوي ========== */
     header {
-      background: rgba(255, 255, 255, 0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.08);
       backdrop-filter: blur(10px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      padding: 14px 40px;
+      padding: 15px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.18);
     }
 
     .logo {
+      font-size: 22px;
       font-weight: 700;
-      font-size: 20px;
       color: #ffd369;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .language-btn {
-      cursor: pointer;
-      background: none;
-      border: 1px solid #ffd369;
-      padding: 5px 10px;
-      color: #ffd369;
-      border-radius: 6px;
-      font-size: 13px;
-      transition: 0.3s;
-    }
-
-    .language-btn:hover {
-      background: #ffd369;
-      color: #001f3f;
-    }
-
-    nav ul {
-      display: flex;
-      list-style: none;
-      gap: 20px;
     }
 
     nav a {
-      text-decoration: none;
       color: #fff;
-      font-weight: 500;
-      transition: 0.3s;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: 600;
     }
 
-    nav a:hover { color: #ffd369; }
+    nav a:hover { text-decoration: underline; }
 
-    .login-card {
-      background: rgba(255, 255, 255, 0.12);
-      padding: 35px;
-      border-radius: 16px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-      width: 380px;
-      margin: 90px auto;
-      text-align: center;
-    }
-
-    h2 {
+    /* زر اللغة الصغير */
+    .lang-btn {
+      background: rgba(255,255,255,0.18);
+      padding: 5px 12px;
+      font-size: 12px;
+      border-radius: 20px;
+      border: none;
       color: #ffd369;
-      margin-bottom: 8px;
+      cursor: pointer;
+      margin-left: 20px;
+      transition: 0.3s;
+      font-weight: 600;
+    }
+
+    .lang-btn:hover {
+      background: rgba(255,255,255,0.35);
+    }
+
+    /* ========== صندوق تسجيل الدخول ========== */
+    .login-box {
+      margin-top: 80px;
+      background: rgba(255,255,255,0.12);
+      padding: 40px;
+      width: 350px;
+      border-radius: 14px;
+      text-align: center;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .login-box h2 {
+      color: #ffd369;
+      margin-bottom: 10px;
+      font-size: 22px;
       font-weight: 700;
     }
 
-    p.subtitle {
-      color: #ddd;
-      font-size: 15px;
-      margin-bottom: 25px;
-    }
+    .login-box p { color: #eee; font-size: 14px; margin-bottom: 20px; }
 
-    input {
+    .login-box input {
       width: 100%;
       padding: 12px;
-      margin-bottom: 15px;
-      border: none;
+      margin-bottom: 12px;
       border-radius: 8px;
-      font-size: 15px;
       background: rgba(255,255,255,0.2);
-      color: #fff;
+      border: none;
+      color: white;
+      font-size: 15px;
     }
 
-    input::placeholder { color: #ddd; }
+    .login-box input::placeholder { color: #ddd; }
 
-    button {
+    .login-box button {
       width: 100%;
       padding: 12px;
-      background: linear-gradient(135deg,#007bff,#0056b3);
+      background: #007bff;
       border: none;
       border-radius: 8px;
       color: white;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: 0.3s;
+      transition: 0.2s;
     }
 
-    .alert {
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      display: none;
-      font-size: 14px;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .alert-success {
-      background: rgba(40,167,69,0.2);
-      color: #9bffb2;
-      border: 1px solid #28a745;
-    }
-
-    .alert-error {
-      background: rgba(220,53,69,0.2);
-      color: #ffb1b1;
-      border: 1px solid #dc3545;
+    .login-box button:hover {
+      background: #005ecb;
     }
 
     footer {
+      position: fixed;
+      bottom: 15px;
+      width: 100%;
       text-align: center;
-      color: #aaa;
+      color: #ccc;
       font-size: 13px;
-      margin-top: 40px;
-      padding-bottom: 15px;
     }
   </style>
 </head>
 
 <body>
 
+  <!-- الشريط العلوي -->
   <header>
     <div class="logo" data-text="header_title">💼 Career Building for JU Students</div>
 
-    <button class="language-btn" id="langToggle">EN</button>
+    <nav>
+      <a href="jobs.html" data-text="jobs">الوظائف</a>
+      <a href="signup.html" data-text="signup">إنشاء حساب</a>
+    </nav>
+
+    <button class="lang-btn" id="langToggle">EN</button>
   </header>
 
-  <div class="login-card">
+  <!-- صندوق تسجيل الدخول -->
+  <div class="login-box">
     <h2 data-text="login_title">🔐 تسجيل الدخول</h2>
-    <p class="subtitle" data-text="subtitle">مرحبًا بعودتك! سجل دخولك للوصول إلى حسابك</p>
-
-    <div id="alertBox" class="alert"></div>
+    <p data-text="welcome_msg">مرحبًا بعودتك! سجّل دخولك للوصول إلى حسابك</p>
 
     <form id="loginForm">
-      <input id="email" type="email" data-placeholder="email_ph" placeholder="البريد الإلكتروني" required />
-      <input id="password" type="password" data-placeholder="password_ph" placeholder="كلمة المرور" required />
+      <input id="email" type="email" data-text="email_placeholder" placeholder="البريد الإلكتروني">
+      <input id="password" type="password" data-text="password_placeholder" placeholder="كلمة المرور">
       <button type="submit" data-text="login_btn">تسجيل الدخول</button>
     </form>
 
-    <p style="margin-top: 15px;" data-text="no_account">
-      ليس لديك حساب؟ 
-      <a href="signup.html" data-text="signup_link">إنشاء حساب جديد</a>
+    <p style="margin-top: 10px;">
+      <span data-text="no_account">ليس لديك حساب؟</span>
+      <a href="signup.html" style="color:#ffd369;" data-text="create_account">أنشئ حساباً</a>
     </p>
   </div>
 
-  <footer data-text="footer">© 2025 بوابة الوظائف - جامعة جازان</footer>
+  <footer>© 2025 Career Building for JU Students</footer>
 
-  <!-- 🌍 ترجمة AR & EN -->
-  <script>
-    const translations = {
-      ar: {
-        page_title: "🔐 تسجيل الدخول - بوابة الوظائف",
-        header_title: "💼 Career Building for JU Students",
-        login_title: "🔐 تسجيل الدخول",
-        subtitle: "مرحبًا بعودتك! سجل دخولك للوصول إلى حسابك",
-        email_ph: "البريد الإلكتروني",
-        password_ph: "كلمة المرور",
-        login_btn: "تسجيل الدخول",
-        no_account: "ليس لديك حساب؟",
-        signup_link: "إنشاء حساب جديد",
-        footer: "© 2025 بوابة الوظائف - جامعة جازان"
-      },
+<script>
+/* =======================
+    🔄 الترجمة AR / EN
+======================= */
+const translations = {
+  ar: {
+    page_title: "🔐 تسجيل الدخول",
+    header_title: "💼 Career Building for JU Students",
+    login_title: "🔐 تسجيل الدخول",
+    welcome_msg: "مرحبًا بعودتك! سجّل دخولك للوصول إلى حسابك",
+    email_placeholder: "البريد الإلكتروني",
+    password_placeholder: "كلمة المرور",
+    login_btn: "تسجيل الدخول",
+    no_account: "ليس لديك حساب؟",
+    create_account: "إنشاء حساب",
+    signup: "إنشاء حساب",
+    jobs: "الوظائف"
+  },
 
-      en: {
-        page_title: "🔐 Login - Career Building",
-        header_title: "💼 Career Building for JU Students",
-        login_title: "🔐 Login",
-        subtitle: "Welcome back! Login to access your account",
-        email_ph: "Email Address",
-        password_ph: "Password",
-        login_btn: "Login",
-        no_account: "Don’t have an account?",
-        signup_link: "Create a new account",
-        footer: "© 2025 Career Building for JU Students"
-      }
-    };
+  en: {
+    page_title: "🔐 Login",
+    header_title: "💼 Career Building for JU Students",
+    login_title: "🔐 Login",
+    welcome_msg: "Welcome back! Login to access your account",
+    email_placeholder: "Email Address",
+    password_placeholder: "Password",
+    login_btn: "Login",
+    no_account: "Don’t have an account?",
+    create_account: "Sign Up",
+    signup: "Sign Up",
+    jobs: "Jobs"
+  }
+};
 
-    let currentLang = "ar";
+let currentLang = "ar";
 
-    document.getElementById("langToggle").onclick = () => {
-      currentLang = currentLang === "ar" ? "en" : "ar";
-      document.documentElement.lang = currentLang;
-      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+document.getElementById("langToggle").onclick = () => {
+  currentLang = currentLang === "ar" ? "en" : "ar";
 
-      // تغيير النصوص
-      document.querySelectorAll("[data-text]").forEach(el => {
-        const key = el.getAttribute("data-text");
-        el.textContent = translations[currentLang][key];
-      });
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
 
-      // تغيير placeholder
-      document.querySelectorAll("[data-placeholder]").forEach(el => {
-        const key = el.getAttribute("data-placeholder");
-        el.placeholder = translations[currentLang][key];
-      });
+  document.querySelectorAll("[data-text]").forEach(el => {
+    el.textContent = translations[currentLang][el.dataset.text];
+    if (el.tagName === "INPUT") {
+      el.placeholder = translations[currentLang][el.dataset.text];
+    }
+  });
 
-      document.title = translations[currentLang].page_title;
+  document.title = translations[currentLang].page_title;
 
-      document.getElementById("langToggle").textContent =
-        currentLang === "ar" ? "EN" : "AR";
-    };
-  </script>
+  document.getElementById("langToggle").textContent =
+    currentLang === "ar" ? "EN" : "AR";
+};
 
-  <!-- login script -->
-  <script>
-    const alertBox = document.getElementById("alertBox");
+/* =======================
+      تسجيل الدخول
+======================= */
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    function showAlert(message, type) {
-      alertBox.textContent = message;
-      alertBox.className = `alert show ${type === "success" ? "alert-success" : "alert-error"}`;
+  const loginData = {
+    email: document.getElementById("email").value.trim(),
+    password: document.getElementById("password").value.trim()
+  };
+
+  try {
+    const res = await fetch("/.netlify/functions/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loginData)
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      alert(result.message || "❌ فشل تسجيل الدخول");
+      return;
     }
 
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+    localStorage.setItem("user", JSON.stringify(result.user));
 
-      const loginData = {
-        email: document.getElementById("email").value.trim(),
-        password: document.getElementById("password").value.trim()
-      };
+    if (result.user.user_type === "company") {
+      window.location.href = "company-dashboard.html";
+    } else {
+      window.location.href = "jobs.html";
+    }
 
-      try {
-        const res = await fetch("/.netlify/functions/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(loginData)
-        });
-
-        const result = await res.json();
-
-        if (!res.ok) {
-          showAlert(result.message || "❌ فشل تسجيل الدخول", "error");
-          return;
-        }
-
-        localStorage.setItem("user", JSON.stringify(result.user));
-
-        showAlert("✔️ تم تسجيل الدخول بنجاح!", "success");
-
-        setTimeout(() => {
-          const type = result.user.user_type;
-          window.location.href =
-            type === "admin" ? "admin-dashboard.html" :
-            type === "company" ? "company-dashboard.html" :
-            "jobs.html";
-        }, 1200);
-
-      } catch (error) {
-        console.error("⚠️ خطأ:", error);
-        showAlert("⚠️ حدث خطأ أثناء الاتصال بالخادم", "error");
-      }
-    });
-  </script>
+  } catch (err) {
+    console.error(err);
+    alert("⚠️ خطأ في الاتصال بالخادم");
+  }
+});
+</script>
 
 </body>
 </html>

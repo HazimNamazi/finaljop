@@ -4,128 +4,191 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-text="page_title">💼 الوظائف المتاحة - بوابة الوظائف</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body { 
-      font-family: 'Tajawal', sans-serif; 
-      background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%); 
-      color: white; margin: 0; padding: 0; 
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%);
+      color: white;
+      margin: 0;
+      padding: 0;
     }
-    header { 
-      background: rgba(255,255,255,0.1); 
-      backdrop-filter: blur(10px); 
-      display: flex; 
-      justify-content: space-between; 
-      padding: 14px 40px; 
+
+    header {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      padding: 14px 35px;
+      color: #ffd369;
     }
 
-    .logo { 
-      font-weight: 700; 
-      color: #ffd369; 
+    .logo {
+      font-weight: 700;
       font-size: 20px;
+      color: #ffd369;
     }
 
+    /* زر اللغة */
     .language-btn {
       cursor: pointer;
-      background: none;
-      border: 1px solid #ffd369;
-      padding: 5px 10px;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      padding: 6px 14px;
       color: #ffd369;
-      border-radius: 6px;
-      font-size: 13px;
-      margin-left: 15px;
-      transition: 0.3s;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: 0.2s ease;
+      margin-right: 15px;
     }
 
-    .jobs-container { 
-      max-width: 900px; 
-      margin: 60px auto; 
-      background: rgba(255,255,255,0.1); 
-      backdrop-filter: blur(8px); 
-      padding: 30px; 
-      border-radius: 16px; 
+    .language-btn:hover {
+      background: rgba(255,255,255,0.28);
     }
 
-    .filters {
+    nav ul {
+      list-style: none;
       display: flex;
-      gap: 10px;
+      gap: 18px;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav a {
+      color: #fff;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      color: #ffd369;
+    }
+
+    .username {
+      color: #ffd369;
+      font-weight: bold;
+    }
+
+    .logout-btn {
+      background: #ff4f4f;
+      color: white;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      border: none;
+      font-weight: bold;
+    }
+
+    /* محتوى الوظائف */
+    .jobs-container {
+      max-width: 920px;
+      margin: 60px auto;
+      padding: 40px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      text-align: center;
+      color: #ffd369;
+    }
+
+    /* بطاقة الوظيفة */
+    .job-card {
+      background: rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 20px;
       margin-bottom: 20px;
     }
 
-    select {
-      padding: 8px;
-      border-radius: 8px;
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .job-meta {
+      margin-top: 7px;
+      font-size: 15px;
+      color: #e7e7e7;
+      line-height: 1.7;
+    }
+
+    .apply-btn {
+      margin-top: 10px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
       border: none;
-      font-size: 14px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
     }
 
-    .job-card { 
-      background: rgba(255,255,255,0.15); 
-      padding: 20px; 
-      border-radius: 12px; 
-      margin-bottom: 20px; 
+    .apply-btn:hover {
+      transform: scale(1.05);
     }
 
-    .job-title { font-size: 20px; font-weight: 700; }
-
-    .company-name { color: #ffd369; font-weight: 600; }
+    .restricted {
+      margin-top: 8px;
+      background: #ffcfcf;
+      padding: 5px 10px;
+      border-radius: 8px;
+      color: #a70000;
+      font-weight: bold;
+      font-size: 13px;
+      display: inline-block;
+    }
   </style>
+
 </head>
 
 <body>
 
 <header>
-  <div class="logo" data-text="header_title">💼 Career Building for JU Students</div>
+  <div class="logo">💼 Career Building for JU Students</div>
 
   <nav>
     <ul id="menu"></ul>
   </nav>
 
-  <button class="language-btn" id="langToggle">EN</button>
+  <button id="langToggle" class="language-btn">EN</button>
 </header>
 
 <section class="jobs-container">
-
-  <h2 data-text="jobs_title">💼 الوظائف المتاحة</h2>
-
-  <!-- فلاتر الترتيب -->
-  <div class="filters">
-    <select id="sortDate" onchange="renderJobs()" style="flex:1">
-      <option value="newest">📅 الأحدث أولاً</option>
-      <option value="oldest">📅 الأقدم أولاً</option>
-    </select>
-
-    <select id="filterDept" onchange="renderJobs()" style="flex:1">
-      <option value="">📘 جميع الأقسام</option>
-      <option value="علوم الحاسب">علوم الحاسب</option>
-      <option value="الصحة">الصحة</option>
-      <option value="إدارة الأعمال">إدارة الأعمال</option>
-      <option value="الهندسة">الهندسة</option>
-    </select>
-  </div>
-
+  <h2 class="section-title" data-text="jobs_title">💼 الوظائف المتاحة</h2>
   <div id="jobsList" data-text="loading">⏳ جارٍ تحميل الوظائف...</div>
-
 </section>
 
 <script>
 
-  /* ========================================================
-      🌍 الترجمة AR/EN
-  ======================================================== */
+  /* 🌍 الترجمة */
   const translations = {
     ar: {
       page_title: "💼 الوظائف المتاحة - بوابة الوظائف",
       jobs_title: "💼 الوظائف المتاحة",
       loading: "⏳ جارٍ تحميل الوظائف...",
-      no_jobs: "🚫 لا توجد وظائف",
+      no_jobs: "🚫 لا توجد وظائف حالياً",
       apply: "📄 التقديم على الوظيفة",
-      job_department: "📘 القسم",
-      interview_time: "🕒 وقت المقابلة",
-      deadline: "⏳ آخر موعد للتقديم",
-      email: "📧 بريد الشركة"
+      about: "من نحن",
+      contact: "تواصل معنا",
+      my_applications: "📄 طلباتي",
+      workshops: "📘 ورش العمل",
+      logout: "تسجيل خروج",
+      login: "تسجيل الدخول",
+      signup: "إنشاء حساب",
     },
     en: {
       page_title: "💼 Available Jobs",
@@ -133,16 +196,17 @@
       loading: "⏳ Loading jobs...",
       no_jobs: "🚫 No jobs available",
       apply: "📄 Apply Now",
-      job_department: "📘 Department",
-      interview_time: "🕒 Interview Time",
-      deadline: "⏳ Application Deadline",
-      email: "📧 Company Email"
+      about: "About Us",
+      contact: "Contact Us",
+      my_applications: "📄 My Applications",
+      workshops: "📘 Workshops",
+      logout: "Logout",
+      login: "Login",
+      signup: "Create Account",
     }
   };
 
   let currentLang = "ar";
-  const user = JSON.parse(localStorage.getItem("user"));
-  const menu = document.getElementById("menu");
 
   document.getElementById("langToggle").onclick = () => {
     currentLang = currentLang === "ar" ? "en" : "ar";
@@ -154,88 +218,107 @@
     });
 
     document.title = translations[currentLang].page_title;
-    renderJobs();
+
+    renderMenu();
+
+    document.getElementById("langToggle").textContent =
+      currentLang === "ar" ? "EN" : "AR";
   };
 
-  /* ========================================================
-      القائمة
-  ======================================================== */
+  /* القائمة العلوية */
+  const user = JSON.parse(localStorage.getItem("user"));
+  const menu = document.getElementById("menu");
+
   function renderMenu() {
     if (user && user.user_type === "job_seeker") {
       menu.innerHTML = `
-        <li>👋 ${user.full_name} — ${user.department}</li>
-        <li><a href="student-applications.html">📄 طلباتي</a></li>
+        <li class="username">👋 ${user.full_name} — ${user.department || ""}</li>
+        <li><a data-text="my_applications" href="student-applications.html">${translations[currentLang].my_applications}</a></li>
+        <li><a data-text="workshops" href="workshops.html">${translations[currentLang].workshops}</a></li>
+        <li><a data-text="about" href="about.html">${translations[currentLang].about}</a></li>
+        <li><a data-text="contact" href="contact.html">${translations[currentLang].contact}</a></li>
+        <li><button class="logout-btn" onclick="logout()" data-text="logout">${translations[currentLang].logout}</button></li>
       `;
     } else {
       menu.innerHTML = `
-        <li><a href="login.html">تسجيل الدخول</a></li>
-        <li><a href="signup.html">إنشاء حساب</a></li>
+        <li><a data-text="about" href="about.html">${translations[currentLang].about}</a></li>
+        <li><a data-text="contact" href="contact.html">${translations[currentLang].contact}</a></li>
+        <li><a data-text="login" href="login.html">${translations[currentLang].login}</a></li>
+        <li><a data-text="signup" href="signup.html">${translations[currentLang].signup}</a></li>
       `;
     }
   }
+
   renderMenu();
 
-  /* ========================================================
-      🔥 تحميل الوظائف
-  ======================================================== */
-  let jobsData = [];
+  function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  }
 
+  /* جلب الوظائف */
   async function fetchJobs() {
+    const jobsList = document.getElementById("jobsList");
+
     try {
       const res = await fetch("/.netlify/functions/get-jobs");
       const data = await res.json();
-      jobsData = data.jobs || [];
-      renderJobs();
+      const jobs = data.jobs || [];
+
+      if (!jobs.length) {
+        jobsList.innerHTML = `<p style="text-align:center;">${translations[currentLang].no_jobs}</p>`;
+        return;
+      }
+
+      jobsList.innerHTML = jobs.map(job => {
+        const deadline = job.application_deadline
+          ? new Date(job.application_deadline).toLocaleString("ar-SA")
+          : " — ";
+
+        const interview = job.interview_time
+          ? new Date(job.interview_time).toLocaleString("ar-SA")
+          : " — ";
+
+        const restricted =
+          job.restrict_to_department && user && user.department !== job.department
+            ? `<div class="restricted">⚠️ الوظيفة متاحة فقط لقسم: ${job.department}</div>`
+            : "";
+
+        const allowApply =
+          !job.restrict_to_department ||
+          (user && user.department === job.department);
+
+        return `
+          <div class="job-card">
+            <div class="job-header">
+              <span>${job.job_title}</span>
+              <span>🏢 ${job.company_name}</span>
+            </div>
+
+            <div class="job-meta">
+              📧 بريد الشركة: ${job.company_email || "—"}<br>
+              📘 القسم: ${job.department || "عام"}<br>
+              ⏳ آخر موعد للتقديم: ${deadline}<br>
+              🕒 وقت المقابلة: ${interview}<br>
+              📍 الموقع: ${job.location || "—"}<br>
+              💰 الراتب: ${job.salary_range || "—"}
+            </div>
+
+            ${restricted}
+
+            ${
+              user && allowApply
+                ? `<button class="apply-btn" onclick="applyJob(${job.id})">${translations[currentLang].apply}</button>`
+                : ""
+            }
+
+          </div>
+        `;
+      }).join("");
+
     } catch (err) {
-      document.getElementById("jobsList").innerHTML =
-        `<p style='color:red;text-align:center;'>⚠️ فشل تحميل الوظائف</p>`;
+      jobsList.innerHTML = `<p style="color:red;text-align:center;">⚠️ فشل تحميل الوظائف</p>`;
     }
-  }
-
-  /* ========================================================
-      🔥 عرض الوظائف + الفرز + الفلترة
-  ======================================================== */
-  function renderJobs() {
-    const list = document.getElementById("jobsList");
-    const selectedSort = document.getElementById("sortDate").value;
-    const selectedDept = document.getElementById("filterDept").value;
-
-    let jobs = [...jobsData];
-
-    // فلترة حسب القسم
-    if (selectedDept) {
-      jobs = jobs.filter(j => j.department === selectedDept);
-    }
-
-    // ترتيب حسب التاريخ
-    jobs.sort((a, b) => {
-      const da = new Date(a.created_at);
-      const db = new Date(b.created_at);
-      return selectedSort === "newest" ? db - da : da - db;
-    });
-
-    if (!jobs.length) {
-      list.innerHTML = `<p>${translations[currentLang].no_jobs}</p>`;
-      return;
-    }
-
-    list.innerHTML = jobs
-      .map(job => `
-        <div class="job-card">
-          <div class="job-title">${job.job_title}</div>
-          <div class="company-name">🏢 ${job.company_name}</div>
-
-          <p><strong>${translations[currentLang].email}:</strong> ${job.company_email || "—"}</p>
-          <p><strong>${translations[currentLang].job_department}:</strong> ${job.department || "—"}</p>
-          <p><strong>${translations[currentLang].deadline}:</strong> ${job.application_deadline || "—"}</p>
-          <p><strong>${translations[currentLang].interview_time}:</strong> ${job.interview_time || "—"}</p>
-
-          <p style="color:#eee;">${job.job_description}</p>
-
-          <button onclick="applyJob(${job.id})">${translations[currentLang].apply}</button>
-        </div>
-      `)
-      .join("");
   }
 
   function applyJob(id) {
@@ -244,6 +327,7 @@
   }
 
   fetchJobs();
+
 </script>
 
 </body>
