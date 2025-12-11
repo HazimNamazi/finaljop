@@ -3,10 +3,8 @@ import bcrypt from "bcryptjs";
 
 export async function handler(event) {
   try {
-    // اتصال قاعدة البيانات
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
-    // قراءة بيانات الإدخال
     const { email, password } = JSON.parse(event.body);
 
     if (!email || !password) {
@@ -16,7 +14,6 @@ export async function handler(event) {
       };
     }
 
-    // التحقق من وجود المستخدم
     const users = await sql`SELECT * FROM users WHERE email = ${email}`;
     if (users.length === 0) {
       return {
@@ -27,7 +24,6 @@ export async function handler(event) {
 
     const user = users[0];
 
-    // التحقق من كلمة المرور
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return {
@@ -36,22 +32,18 @@ export async function handler(event) {
       };
     }
 
-    // *** النقطة المهمة جداً ***
-    // user_type يأتي من قاعدة البيانات وليس role
+    // 🔥 نرجّع فقط الاسم + القسم + نوع المستخدم
     const safeUser = {
-      id: user.id,
       full_name: user.full_name,
-      email: user.email,
-      user_type: user.user_type,  // ← هنا السحر
-      status: user.status,
+      department: user.department,
+      user_type: user.user_type
     };
 
-    // نجاح تسجيل الدخول
     return {
       statusCode: 200,
       body: JSON.stringify({
         message: "✅ تم تسجيل الدخول بنجاح!",
-        user: safeUser,
+        user: safeUser
       }),
     };
 

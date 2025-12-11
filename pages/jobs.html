@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-text="page_title">💼 الوظائف المتاحة</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -130,14 +131,9 @@
       background: #005fcc;
     }
 
-    /* دعم LTR */
     html[dir="ltr"] nav ul {
       flex-direction: row-reverse;
     }
-    html[dir="ltr"] .logo {
-      margin-right: auto;
-    }
-
   </style>
 </head>
 
@@ -159,9 +155,7 @@
 </section>
 
 <script>
-/* ---------------------------
-     🌍 الترجمة AR / EN
---------------------------- */
+/* 🌍 الترجمة */
 const translations = {
   ar: {
     page_title: "💼 الوظائف المتاحة",
@@ -171,10 +165,7 @@ const translations = {
     no_jobs: "🚫 لا توجد وظائف",
     apply: "📄 التقديم على الوظيفة",
     my_applications: "طلباتي 📄",
-    workshops: "ورش العمل 📘",
-    about: "من نحن؟",
-    contact: "تواصل معنا",
-    logout: "تسجيل خروج",
+    logout: "تسجيل خروج"
   },
   en: {
     page_title: "💼 Available Jobs",
@@ -184,10 +175,7 @@ const translations = {
     no_jobs: "🚫 No jobs available",
     apply: "📄 Apply Now",
     my_applications: "My Applications 📄",
-    workshops: "Workshops 📘",
-    about: "About Us",
-    contact: "Contact Us",
-    logout: "Logout",
+    logout: "Logout"
   }
 };
 
@@ -208,26 +196,18 @@ document.getElementById("langToggle").onclick = () => {
   renderMenu();
 };
 
-/* ---------------------------
-     👤 القائمة العلوية
---------------------------- */
+/* 👤 القائمة العلوية */
 const user = JSON.parse(localStorage.getItem("user"));
 const menu = document.getElementById("menu");
 
 function renderMenu() {
-  if (user && user.user_type === "job_seeker") {
+  if (user) {
     menu.innerHTML = `
-      <li>👋 ${user.full_name} – ${user.department || ""}</li>
-      <li><a href="student-applications.html" data-text="my_applications">${translations[currentLang].my_applications}</a></li>
-      <li><a href="workshops.html" data-text="workshops">${translations[currentLang].workshops}</a></li>
-      <li><a href="about.html" data-text="about">${translations[currentLang].about}</a></li>
-      <li><a href="contact.html" data-text="contact">${translations[currentLang].contact}</a></li>
+      <li>👋 ${user.full_name} – ${user.department}</li>
       <li><button class="logout-btn" onclick="logout()" data-text="logout">${translations[currentLang].logout}</button></li>
     `;
   } else {
     menu.innerHTML = `
-      <li><a href="about.html" data-text="about">${translations[currentLang].about}</a></li>
-      <li><a href="contact.html" data-text="contact">${translations[currentLang].contact}</a></li>
       <li><a href="login.html">Login</a></li>
       <li><a href="signup.html">Signup</a></li>
     `;
@@ -240,9 +220,7 @@ function logout() {
   location.href = "login.html";
 }
 
-/* ---------------------------
-     🔥 تحميل الوظائف
---------------------------- */
+/* 🔥 تحميل الوظائف */
 async function fetchJobs() {
   const jobsList = document.getElementById("jobsList");
 
@@ -257,32 +235,28 @@ async function fetchJobs() {
     }
 
     jobsList.innerHTML = jobs.map(job => {
-      const deadline = job.application_deadline ? new Date(job.application_deadline).toLocaleString("ar-SA") : "—";
-      const interview = job.interview_time ? new Date(job.interview_time).toLocaleString("ar-SA") : "—";
-
-      let restriction = "";
-      if (job.restrict_to_department && user?.department !== job.department) {
-        restriction = `<div class="label-warning">⚠️ الوظيفة متاحة فقط لقسم: ${job.department}</div>`;
-      }
-
-      const canApply =
-        !job.restrict_to_department ||
-        (user && user.department === job.department);
+      const canApply = user && user.department === job.department;
 
       return `
         <div class="job-card">
           <div class="job-title">${job.job_title}</div>
-          <div class="company-email">📧 ${job.company_email || "—"}</div>
+          <div class="company-email">📧 ${job.company_email}</div>
           <div>🏢 ${job.company_name}</div>
-          <div>📍 ${job.location || "—"}</div>
-          <div>📘 القسم: ${job.department || "عام"}</div>
-          <div>⏳ آخر موعد للتقديم: ${deadline}</div>
-          <div>🕒 وقت المقابلة: ${interview}</div>
-          <div>💰 الراتب: ${job.salary_range || "—"}</div>
+          <div>📍 ${job.location}</div>
+          <div>📘 القسم المطلوب: ${job.department}</div>
+          <div>💰 الراتب: ${job.salary_range}</div>
 
-          ${restriction}
+          ${
+            user && !canApply 
+              ? `<div class="label-warning">⚠️ الوظيفة متاحة فقط لقسم: ${job.department}</div>`
+              : ""
+          }
 
-          ${canApply ? `<button class="apply-btn" onclick="applyJob(${job.id})">${translations[currentLang].apply}</button>` : ""}
+          ${
+            user && canApply
+              ? `<button class="apply-btn" onclick="applyJob(${job.id})">${translations[currentLang].apply}</button>`
+              : ""
+          }
         </div>
       `;
     }).join("");
