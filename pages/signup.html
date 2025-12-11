@@ -15,10 +15,10 @@
       color: #fff;
     }
 
+    /* ===== HEADER ===== */
     header {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       padding: 14px 40px;
       display: flex;
       justify-content: space-between;
@@ -31,22 +31,24 @@
       color: #ffd369;
     }
 
+    /* زر تغيير اللغة — النسخة الاحترافية */
     .language-btn {
       cursor: pointer;
-      background: none;
-      border: 1px solid #ffd369;
-      padding: 5px 10px;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      padding: 6px 14px;
       color: #ffd369;
-      border-radius: 6px;
-      font-size: 13px;
-      transition: 0.3s;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: 0.2s ease;
     }
 
     .language-btn:hover {
-      background: #ffd369;
-      color: #001f3f;
+      background: rgba(255,255,255,0.3);
     }
 
+    /* ===== CARD ===== */
     .signup-card {
       background: rgba(255,255,255,0.12);
       padding: 35px;
@@ -57,34 +59,47 @@
       text-align: center;
     }
 
-    nav ul { display: flex; list-style: none; gap: 20px; }
-    nav a { color: #fff; text-decoration: none; }
-    nav a:hover { color: #ffd369; }
-
     h2 { color: #ffd369; margin-bottom: 8px; }
+
     label { display: block; margin-bottom: 6px; font-weight: 600; }
+
     input, select {
-      width: 100%; padding: 10px;
-      border-radius: 8px; border: 1.8px solid #ddd;
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1.8px solid #ddd;
       margin-bottom: 15px;
     }
 
     button {
-      width: 100%; padding: 10px;
+      width: 100%;
+      padding: 10px;
       background: linear-gradient(90deg, #007bff, #0056b3);
-      color: white; border: none; border-radius: 8px;
-      cursor: pointer; font-weight: bold;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s ease;
     }
 
     button:hover { transform: scale(1.03); }
 
     #alertBox {
-      display: none; margin-top: 15px;
-      padding: 10px; border-radius: 8px;
-      font-weight: bold; text-align: center;
+      display: none;
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
     }
 
-    footer { text-align: center; color: #ddd; padding: 20px; margin-top: 40px; }
+    footer {
+      text-align: center;
+      color: #ddd;
+      padding: 20px;
+      margin-top: 40px;
+    }
   </style>
 </head>
 
@@ -116,7 +131,7 @@
       <label data-text="phone">رقم الجوال:</label>
       <input type="tel" id="phone" pattern="[0-9]{10}" required>
 
-      <!-- القسم يظهر فقط للطالب -->
+      <!-- القسم للطلاب فقط -->
       <div id="departmentField">
         <label data-text="department">القسم:</label>
         <select id="department">
@@ -134,6 +149,7 @@
         <option value="company">شركة 🏢</option>
       </select>
 
+      <!-- حقل الشركة -->
       <div id="companyFields" style="display:none;">
         <label data-text="company_title">المسمى الوظيفي للشركة:</label>
         <input type="text" id="job_title" placeholder="مثال: HR Manager">
@@ -215,10 +231,59 @@
     userTypeSelect.addEventListener("change", () => {
       if (userTypeSelect.value === "company") {
         companyFields.style.display = "block";
-        departmentField.style.display = "none";  // أخفي القسم
+        departmentField.style.display = "none";
       } else {
         companyFields.style.display = "none";
-        departmentField.style.display = "block"; // أظهر القسم
+        departmentField.style.display = "block";
+      }
+    });
+  </script>
+
+  <!-- 🟢 إرسال البيانات إلى Netlify Function -->
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const body = {
+        full_name: document.getElementById("full_name").value,
+        username: document.getElementById("username").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        phone: document.getElementById("phone").value,
+        department: document.getElementById("department").value,
+        user_type: document.getElementById("user_type").value,
+        job_title: document.getElementById("job_title").value
+      };
+
+      const alertBox = document.getElementById("alertBox");
+
+      try {
+        const res = await fetch("/.netlify/functions/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        alertBox.style.display = "block";
+
+        if (res.status === 200) {
+          alertBox.style.background = "#28a745";
+          alertBox.textContent = "✔ تم إنشاء الحساب بنجاح!";
+
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 1500);
+        } else {
+          alertBox.style.background = "#dc3545";
+          alertBox.textContent = data.message || "خطأ أثناء إنشاء الحساب";
+        }
+
+      } catch (err) {
+        alertBox.style.display = "block";
+        alertBox.style.background = "#dc3545";
+        alertBox.textContent = "❌ فشل الاتصال بالخادم";
       }
     });
   </script>
