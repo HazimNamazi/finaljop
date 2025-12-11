@@ -20,7 +20,6 @@
       color: #fff;
     }
 
-    /* ========== الشريط العلوي ========== */
     header {
       position: fixed;
       top: 0;
@@ -48,9 +47,6 @@
       font-weight: 600;
     }
 
-    nav a:hover { text-decoration: underline; }
-
-    /* زر اللغة الصغير */
     .lang-btn {
       background: rgba(255,255,255,0.18);
       padding: 5px 12px;
@@ -64,11 +60,6 @@
       font-weight: 600;
     }
 
-    .lang-btn:hover {
-      background: rgba(255,255,255,0.35);
-    }
-
-    /* ========== صندوق تسجيل الدخول ========== */
     .login-box {
       margin-top: 80px;
       background: rgba(255,255,255,0.12);
@@ -86,9 +77,6 @@
       font-size: 22px;
       font-weight: 700;
     }
-
-    .login-box p { color: #eee; font-size: 14px; margin-bottom: 20px; }
-
     .login-box input {
       width: 100%;
       padding: 12px;
@@ -100,8 +88,6 @@
       font-size: 15px;
     }
 
-    .login-box input::placeholder { color: #ddd; }
-
     .login-box button {
       width: 100%;
       padding: 12px;
@@ -112,11 +98,6 @@
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .login-box button:hover {
-      background: #005ecb;
     }
 
     footer {
@@ -132,40 +113,39 @@
 
 <body>
 
-  <!-- الشريط العلوي -->
-  <header>
-    <div class="logo" data-text="header_title">💼 Career Building for JU Students</div>
+<header>
+  <div class="logo" data-text="header_title">💼 Career Building for JU Students</div>
 
-    <nav>
-      <a href="jobs.html" data-text="jobs">الوظائف</a>
-      <a href="signup.html" data-text="signup">إنشاء حساب</a>
-    </nav>
+  <nav>
+    <a href="jobs.html" data-text="jobs">الوظائف</a>
+    <a href="signup.html" data-text="signup">إنشاء حساب</a>
+  </nav>
 
-    <button class="lang-btn" id="langToggle">EN</button>
-  </header>
+  <button class="lang-btn" id="langToggle">EN</button>
+</header>
 
-  <!-- صندوق تسجيل الدخول -->
-  <div class="login-box">
-    <h2 data-text="login_title">🔐 تسجيل الدخول</h2>
-    <p data-text="welcome_msg">مرحبًا بعودتك! سجّل دخولك للوصول إلى حسابك</p>
+<div class="login-box">
+  <h2 data-text="login_title">🔐 تسجيل الدخول</h2>
+  <p data-text="welcome_msg">مرحبًا بعودتك! سجّل دخولك للوصول إلى حسابك</p>
 
-    <form id="loginForm">
-      <input id="email" type="email" data-text="email_placeholder" placeholder="البريد الإلكتروني">
-      <input id="password" type="password" data-text="password_placeholder" placeholder="كلمة المرور">
-      <button type="submit" data-text="login_btn">تسجيل الدخول</button>
-    </form>
+  <form id="loginForm">
+    <input id="email" type="email" data-text="email_placeholder" placeholder="البريد الإلكتروني">
+    <input id="password" type="password" data-text="password_placeholder" placeholder="كلمة المرور">
+    <button type="submit" data-text="login_btn">تسجيل الدخول</button>
+  </form>
 
-    <p style="margin-top: 10px;">
-      <span data-text="no_account">ليس لديك حساب؟</span>
-      <a href="signup.html" style="color:#ffd369;" data-text="create_account">أنشئ حساباً</a>
-    </p>
-  </div>
+  <p style="margin-top: 10px;">
+    <span data-text="no_account">ليس لديك حساب؟</span>
+    <a href="signup.html" style="color:#ffd369;" data-text="create_account">أنشئ حساباً</a>
+  </p>
+</div>
 
-  <footer>© 2025 Career Building for JU Students</footer>
+<footer>© 2025 Career Building for JU Students</footer>
 
 <script>
+
 /* =======================
-    🔄 الترجمة AR / EN
+        الترجمة
 ======================= */
 const translations = {
   ar: {
@@ -201,7 +181,6 @@ let currentLang = "ar";
 
 document.getElementById("langToggle").onclick = () => {
   currentLang = currentLang === "ar" ? "en" : "ar";
-
   document.documentElement.lang = currentLang;
   document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
 
@@ -213,13 +192,11 @@ document.getElementById("langToggle").onclick = () => {
   });
 
   document.title = translations[currentLang].page_title;
-
-  document.getElementById("langToggle").textContent =
-    currentLang === "ar" ? "EN" : "AR";
+  document.getElementById("langToggle").textContent = currentLang === "ar" ? "EN" : "AR";
 };
 
 /* =======================
-      تسجيل الدخول
+        تسجيل الدخول
 ======================= */
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -243,7 +220,16 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       return;
     }
 
-    localStorage.setItem("user", JSON.stringify(result.user));
+    /* =============================
+        أهم نقطة — حفظ بيانات كاملة
+    ============================== */
+    localStorage.setItem("user", JSON.stringify({
+      id: result.user.id,
+      full_name: result.user.full_name,
+      email: result.user.email,
+      department: result.user.department,
+      user_type: result.user.user_type
+    }));
 
     if (result.user.user_type === "company") {
       window.location.href = "company-dashboard.html";
