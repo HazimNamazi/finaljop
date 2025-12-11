@@ -130,9 +130,14 @@
       background: #005fcc;
     }
 
+    /* دعم LTR */
     html[dir="ltr"] nav ul {
       flex-direction: row-reverse;
     }
+    html[dir="ltr"] .logo {
+      margin-right: auto;
+    }
+
   </style>
 </head>
 
@@ -154,7 +159,9 @@
 </section>
 
 <script>
-/* 🌍 الترجمة */
+/* ---------------------------
+     🌍 الترجمة AR / EN
+--------------------------- */
 const translations = {
   ar: {
     page_title: "💼 الوظائف المتاحة",
@@ -164,7 +171,10 @@ const translations = {
     no_jobs: "🚫 لا توجد وظائف",
     apply: "📄 التقديم على الوظيفة",
     my_applications: "طلباتي 📄",
-    logout: "تسجيل خروج"
+    workshops: "ورش العمل 📘",
+    about: "من نحن؟",
+    contact: "تواصل معنا",
+    logout: "تسجيل خروج",
   },
   en: {
     page_title: "💼 Available Jobs",
@@ -174,13 +184,15 @@ const translations = {
     no_jobs: "🚫 No jobs available",
     apply: "📄 Apply Now",
     my_applications: "My Applications 📄",
-    logout: "Logout"
+    workshops: "Workshops 📘",
+    about: "About Us",
+    contact: "Contact Us",
+    logout: "Logout",
   }
 };
 
 let currentLang = "ar";
 
-/* 🔄 إصلاح مشكلة اللغة */
 document.getElementById("langToggle").onclick = () => {
   currentLang = currentLang === "ar" ? "en" : "ar";
   document.documentElement.lang = currentLang;
@@ -190,16 +202,15 @@ document.getElementById("langToggle").onclick = () => {
     el.textContent = translations[currentLang][el.dataset.text];
   });
 
-  document.title = translations[currentLang].page_title;
-
   document.getElementById("langToggle").textContent =
     currentLang === "ar" ? "EN" : "AR";
 
   renderMenu();
-  fetchJobs(); // 🔥 هذا هو الحل الحقيقي
 };
 
-/* 👤 القائمة */
+/* ---------------------------
+     👤 القائمة العلوية
+--------------------------- */
 const user = JSON.parse(localStorage.getItem("user"));
 const menu = document.getElementById("menu");
 
@@ -208,16 +219,20 @@ function renderMenu() {
     menu.innerHTML = `
       <li>👋 ${user.full_name} – ${user.department || ""}</li>
       <li><a href="student-applications.html" data-text="my_applications">${translations[currentLang].my_applications}</a></li>
+      <li><a href="workshops.html" data-text="workshops">${translations[currentLang].workshops}</a></li>
+      <li><a href="about.html" data-text="about">${translations[currentLang].about}</a></li>
+      <li><a href="contact.html" data-text="contact">${translations[currentLang].contact}</a></li>
       <li><button class="logout-btn" onclick="logout()" data-text="logout">${translations[currentLang].logout}</button></li>
     `;
   } else {
     menu.innerHTML = `
+      <li><a href="about.html" data-text="about">${translations[currentLang].about}</a></li>
+      <li><a href="contact.html" data-text="contact">${translations[currentLang].contact}</a></li>
       <li><a href="login.html">Login</a></li>
       <li><a href="signup.html">Signup</a></li>
     `;
   }
 }
-
 renderMenu();
 
 function logout() {
@@ -225,7 +240,9 @@ function logout() {
   location.href = "login.html";
 }
 
-/* 🔥 تحميل الوظائف */
+/* ---------------------------
+     🔥 تحميل الوظائف
+--------------------------- */
 async function fetchJobs() {
   const jobsList = document.getElementById("jobsList");
 
@@ -240,28 +257,32 @@ async function fetchJobs() {
     }
 
     jobsList.innerHTML = jobs.map(job => {
-      const canApply = user && user.department === job.department;
+      const deadline = job.application_deadline ? new Date(job.application_deadline).toLocaleString("ar-SA") : "—";
+      const interview = job.interview_time ? new Date(job.interview_time).toLocaleString("ar-SA") : "—";
+
+      let restriction = "";
+      if (job.restrict_to_department && user?.department !== job.department) {
+        restriction = `<div class="label-warning">⚠️ الوظيفة متاحة فقط لقسم: ${job.department}</div>`;
+      }
+
+      const canApply =
+        !job.restrict_to_department ||
+        (user && user.department === job.department);
 
       return `
         <div class="job-card">
           <div class="job-title">${job.job_title}</div>
-          <div class="company-email">📧 ${job.company_email || "-"}</div>
-          <div>🏢 ${job.company_name || "-"}</div>
-          <div>📍 ${job.location || "-"}</div>
-          <div>📘 القسم: ${job.department || "غير محدد"}</div>
-          <div>💰 الراتب: ${job.salary_range || "-"}</div>
+          <div class="company-email">📧 ${job.company_email || "—"}</div>
+          <div>🏢 ${job.company_name}</div>
+          <div>📍 ${job.location || "—"}</div>
+          <div>📘 القسم: ${job.department || "عام"}</div>
+          <div>⏳ آخر موعد للتقديم: ${deadline}</div>
+          <div>🕒 وقت المقابلة: ${interview}</div>
+          <div>💰 الراتب: ${job.salary_range || "—"}</div>
 
-          ${
-            user && !canApply
-              ? `<div class="label-warning">⚠️ الوظيفة متاحة فقط لقسم: ${job.department}</div>`
-              : ""
-          }
+          ${restriction}
 
-          ${
-            user && canApply
-              ? `<button class="apply-btn" onclick="applyJob(${job.id})">${translations[currentLang].apply}</button>`
-              : ""
-          }
+          ${canApply ? `<button class="apply-btn" onclick="applyJob(${job.id})">${translations[currentLang].apply}</button>` : ""}
         </div>
       `;
     }).join("");
@@ -276,7 +297,6 @@ function applyJob(id) {
   window.location.href = `apply.html?job_id=${id}`;
 }
 
-/* تشغيل أولي */
 fetchJobs();
 </script>
 
