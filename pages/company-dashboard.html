@@ -121,6 +121,12 @@
       box-shadow:0 2px 10px rgba(0,0,0,0.1);
     }
 
+    .job-extra {
+      font-size: 14px;
+      color: #555;
+      margin-top: 6px;
+    }
+
     .delete-job-btn {
       background:#dc3545;
       color:white;
@@ -129,13 +135,20 @@
     }
 
     .add-job-form input,
-    .add-job-form textarea {
+    .add-job-form textarea,
+    .add-job-form select {
       width:100%;
       padding:10px;
       border:1px solid #ccc;
       border-radius:8px;
       margin:6px 0;
       font-family:'Tajawal';
+    }
+
+    .add-job-form label {
+      font-size: 14px;
+      display: block;
+      margin-top: 8px;
     }
 
     .add-job-form button {
@@ -149,6 +162,17 @@
       margin-top:10px;
     }
 
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0 4px;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
   </style>
 </head>
 
@@ -177,6 +201,31 @@
       <input id="job_title" placeholder="المسمى الوظيفي" required>
       <input id="location" placeholder="الموقع">
       <input id="salary_range" placeholder="الراتب المتوقع">
+
+      <!-- 🔵 قسم الوظيفة -->
+      <label for="job_department">القسم المستهدف للوظيفة:</label>
+      <select id="job_department">
+        <option value="">اختر القسم (اختياري)</option>
+        <option value="الصحة">الصحة</option>
+        <option value="علوم الحاسب">علوم الحاسب</option>
+        <option value="الهندسة">الهندسة</option>
+        <option value="إدارة الأعمال">إدارة الأعمال</option>
+      </select>
+
+      <!-- ✅ تحديد أن الوظيفة خاصة بهذا القسم -->
+      <div class="checkbox-row">
+        <input type="checkbox" id="department_restricted">
+        <label for="department_restricted">السماح فقط لطلاب هذا القسم بالتقديم</label>
+      </div>
+
+      <!-- ⏰ وقت المقابلة -->
+      <label for="interview_time">وقت المقابلة (اختياري):</label>
+      <input type="datetime-local" id="interview_time">
+
+      <!-- ⏳ آخر وقت للتقديم -->
+      <label for="application_deadline">آخر وقت للتقديم على الوظيفة (Deadline):</label>
+      <input type="datetime-local" id="application_deadline">
+
       <textarea id="job_description" placeholder="الوصف" rows="4"></textarea>
       <button type="button" onclick="submitJob()">✔ إضافة الوظيفة</button>
     </form>
@@ -295,11 +344,20 @@
     }
 
     jobs.forEach(job => {
+      const dept = job.department ? `القسم: ${job.department}` : "القسم: عام لجميع الأقسام";
+      const restricted = job.restrict_to_department ? "🔒 خاصة بطلاب هذا القسم فقط" : "✅ متاحة لجميع الأقسام";
+      const interview = job.interview_time ? `🕒 وقت المقابلة: ${job.interview_time}` : "";
+      const deadline = job.application_deadline ? `⏳ آخر وقت للتقديم: ${job.application_deadline}` : "";
+
       box.innerHTML += `
         <div class="job-card">
           <strong>${job.job_title}</strong>
-          <div>📍 ${job.location}</div>
-          <div>💰 ${job.salary_range}</div>
+          <div>📍 ${job.location || "غير محدد"}</div>
+          <div>💰 ${job.salary_range || "غير محدد"}</div>
+          <div class="job-extra">${dept}</div>
+          <div class="job-extra">${restricted}</div>
+          ${interview ? `<div class="job-extra">${interview}</div>` : ""}
+          ${deadline ? `<div class="job-extra">${deadline}</div>` : ""}
 
           <button class="delete-job-btn" onclick="deleteJob(${job.id})">🗑 حذف الوظيفة</button>
         </div>
@@ -316,12 +374,36 @@
   }
 
   async function submitJob() {
+    const job_title = document.getElementById("job_title").value.trim();
+    const job_description = document.getElementById("job_description").value.trim();
+    const location = document.getElementById("location").value.trim();
+    const salary_range = document.getElementById("salary_range").value.trim();
+    const department = document.getElementById("job_department").value;
+    const restrict_to_department = document.getElementById("department_restricted").checked;
+    const interview_time = document.getElementById("interview_time").value;
+    const application_deadline = document.getElementById("application_deadline").value;
+
+    if (!job_title) {
+      alert("⚠️ أدخل المسمى الوظيفي");
+      return;
+    }
+
+    if (!application_deadline) {
+      if (!confirm("لم يتم تحديد آخر وقت للتقديم. هل تريد المتابعة وجعل الوظيفة مفتوحة دون موعد نهائي؟")) {
+        return;
+      }
+    }
+
     const body = {
       company_id: user.id,
-      job_title: document.getElementById("job_title").value,
-      job_description: document.getElementById("job_description").value,
-      location: document.getElementById("location").value,
-      salary_range: document.getElementById("salary_range").value
+      job_title,
+      job_description,
+      location,
+      salary_range,
+      department: department || null,
+      restrict_to_department,
+      interview_time: interview_time || null,
+      application_deadline: application_deadline || null
     };
 
     await fetch("/.netlify/functions/add-job", {
@@ -330,7 +412,21 @@
       body: JSON.stringify(body)
     });
 
-    alert("✔ تمت الإضافة");
+    alert("✔ تمت إضافة الوظيفة");
+
+    // تفريغ الحقول بعد الإضافة
+    document.getElementById("job_title").value = "";
+    document.getElementById("job_description").value = "";
+    document.getElementById("location").value = "";
+    document.getElementById("salary_range").value = "";
+    document.getElementById("job_department").value = "";
+    document.getElementById("department_restricted").checked = false;
+    document.getElementById("interview_time").value = "";
+    document.getElementById("application_deadline").value = "";
+
+    // إخفاء النموذج (اختياري)
+    // document.getElementById("addJobForm").style.display = "none";
+
     loadCompanyJobs();
   }
 

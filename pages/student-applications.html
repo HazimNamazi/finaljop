@@ -18,6 +18,23 @@
       margin-bottom:20px;
     }
 
+    .back-btn {
+      display:inline-block;
+      margin-bottom:20px;
+      background:#007bff;
+      color:white;
+      padding:10px 18px;
+      border-radius:8px;
+      font-size:15px;
+      text-decoration:none;
+      font-weight:bold;
+      transition:0.3s;
+    }
+
+    .back-btn:hover {
+      background:#005ecb;
+    }
+
     .card {
       background:white;
       padding:20px;
@@ -86,21 +103,19 @@
 
 <body>
 
+<a href="jobs.html" class="back-btn">⬅ الرجوع إلى صفحة الوظائف</a>
+
 <h2>📄 طلباتي</h2>
 <div id="list"></div>
 
 <script>
 
-  // 🔐 التحقق من تسجيل الدخول كطالب
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user || user.user_type !== "job_seeker") {
     alert("⚠️ يجب تسجيل الدخول كطالب.");
     location.href = "login.html";
   }
 
-  // ======================================
-  //     تحميل الطلبات من السيرفر
-  // ======================================
   async function loadApplications() {
     const res = await fetch(`/.netlify/functions/get-student-applications?student_id=${user.id}`);
     const data = await res.json();
@@ -115,9 +130,6 @@
 
     data.applications.forEach(app => {
 
-      // -------------------------
-      //         الحالة
-      // -------------------------
       const status = (app.status || "").toLowerCase();
       let badgeClass = "pending";
       let readableStatus = "قيد المراجعة";
@@ -135,9 +147,6 @@
         readableStatus = "مقابلة";
       }
 
-      // -------------------------
-      //         المقابلة
-      // -------------------------
       const interviewBox = app.interview_date
         ? `
           <div class="interview-box">
@@ -147,10 +156,6 @@
         `
         : "";
 
-
-      // -------------------------
-      //         رسالة الشركة
-      // -------------------------
       const messageBox = app.message_from_company
         ? `
           <div class="msg-box">
@@ -167,10 +172,6 @@
         `
         : "";
 
-
-      // -------------------------
-      //        بناء الكارد
-      // -------------------------
       container.innerHTML += `
         <div class="card">
           <div class="title">💼 ${app.job_title} – ${app.company_name}</div>

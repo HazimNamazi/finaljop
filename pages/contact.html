@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-text="title">تواصل معنا</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%);
+      color: #fff; margin: 0; padding: 0;
+    }
+    header {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 14px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffd369;
+    }
+    .language-btn {
+      cursor: pointer;
+      background: none;
+      border: 1px solid #ffd369;
+      padding: 5px 10px;
+      color: #ffd369;
+      border-radius: 6px;
+    }
+    .contact-box {
+      max-width: 700px;
+      margin: 70px auto;
+      background: rgba(255,255,255,0.12);
+      padding: 30px;
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      text-align: center;
+      line-height: 1.8;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      margin-bottom: 15px;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+    textarea { height: 140px; }
+
+    button {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      padding: 12px 20px;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      color: #ffd369;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid #ffd369;
+      cursor: pointer;
+      margin-top: 20px;
+      display: inline-block;
+      font-weight: 600;
+    }
+    .back-btn:hover { background: #ffd369; color: #001f3f; transform: scale(1.05); }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo" data-text="header_title">💼 Career Building for JU Students</div>
+  <button class="language-btn" id="langToggle">EN</button>
+</header>
+
+<div class="contact-box">
+  <h2 data-text="heading">تواصل معنا</h2>
+  <p data-text="desc">يسعدنا تواصلك معنا! اترك رسالتك وسنقوم بالرد عليك في أقرب وقت.</p>
+
+  <input type="text" id="name" data-placeholder="name_ph" placeholder="الاسم">
+  <input type="email" id="email" data-placeholder="email_ph" placeholder="البريد الإلكتروني">
+  <textarea id="message" data-placeholder="msg_ph" placeholder="رسالتك"></textarea>
+
+  <button data-text="send_btn">إرسال الرسالة</button>
+
+  <!-- زر الرجوع -->
+  <a href="jobs.html" class="back-btn" data-text="back_btn">⬅️ الرجوع إلى الوظائف</a>
+</div>
+
+<script>
+  const trans = {
+    ar: {
+      title: "تواصل معنا",
+      header_title: "💼 Career Building for JU Students",
+      heading: "تواصل معنا",
+      desc: "يسعدنا تواصلك معنا! اترك رسالتك وسنقوم بالرد عليك.",
+      name_ph: "الاسم",
+      email_ph: "البريد الإلكتروني",
+      msg_ph: "رسالتك",
+      send_btn: "إرسال الرسالة",
+      back_btn: "⬅️ الرجوع إلى الوظائف"
+    },
+    en: {
+      title: "Contact Us",
+      header_title: "💼 Career Building for JU Students",
+      heading: "Contact Us",
+      desc: "We are happy to hear from you! Leave your message and we'll reply soon.",
+      name_ph: "Your Name",
+      email_ph: "Email Address",
+      msg_ph: "Your Message",
+      send_btn: "Send Message",
+      back_btn: "⬅️ Back to Jobs"
+    }
+  };
+
+  let lang = "ar";
+  document.getElementById("langToggle").onclick = () => {
+    lang = lang === "ar" ? "en" : "ar";
+
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+    document.querySelectorAll("[data-text]").forEach(e => {
+      e.textContent = trans[lang][e.dataset.text];
+    });
+
+    document.querySelectorAll("[data-placeholder]").forEach(e => {
+      e.placeholder = trans[lang][e.dataset.placeholder];
+    });
+
+    document.title = trans[lang].title;
+
+    document.getElementById("langToggle").textContent =
+      lang === "ar" ? "EN" : "AR";
+  };
+</script>
+
+</body>
+</html>

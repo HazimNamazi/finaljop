@@ -4,16 +4,26 @@ import 'dotenv/config';
 
 export async function handler(event) {
   try {
-    // ✅ الاتصال بقاعدة البيانات
+    // الاتصال بقاعدة البيانات
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
-    // ✅ قراءة البيانات القادمة من الواجهة الأمامية
-    const { username, full_name, email, password, role, user_type, job_title, phone } = JSON.parse(event.body);
+    // قراءة البيانات من الواجهة
+    const { 
+      username, 
+      full_name, 
+      email, 
+      password, 
+      role, 
+      user_type, 
+      job_title, 
+      phone,
+      department        // ← تمت إضافته
+    } = JSON.parse(event.body);
 
-    // ✅ تحديد نوع المستخدم (افتراضي job_seeker)
+    // نوع المستخدم
     const type = user_type || (role === "company" ? "company" : "job_seeker");
 
-    // ✅ التحقق من القيم المطلوبة
+    // التحقق من القيم المطلوبة
     if (!username || !full_name || !email || !password) {
       return {
         statusCode: 400,
@@ -23,7 +33,7 @@ export async function handler(event) {
       };
     }
 
-    // ✅ التأكد من عدم وجود المستخدم مسبقًا
+    // التحقق من وجود المستخدم مسبقًا
     const existingUser = await sql`
       SELECT * FROM users WHERE email = ${email} OR username = ${username};
     `;
@@ -36,17 +46,31 @@ export async function handler(event) {
       };
     }
 
-    // ✅ تشفير كلمة المرور
+    // تشفير كلمة المرور
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ إدخال المستخدم الجديد في قاعدة البيانات
+    // ⚡ تحديد department الصحيح حسب نوع المستخدم
+    const departmentValue = type === "company" ? null : (department || null);
+
+    // إدخال المستخدم الجديد
     await sql`
-      INSERT INTO users (username, full_name, job_title, phone, email, password, user_type, role, status)
-      VALUES (${username}, ${full_name}, ${job_title || null}, ${phone || null}, ${email},
-              ${hashedPassword}, ${type}, ${role || "member"}, 'active');
+      INSERT INTO users 
+      (username, full_name, job_title, phone, email, password, user_type, role, status, department)
+      VALUES (
+        ${username}, 
+        ${full_name}, 
+        ${type === "company" ? job_title : null}, 
+        ${phone || null}, 
+        ${email},
+        ${hashedPassword}, 
+        ${type}, 
+        ${role || "member"}, 
+        'active',
+        ${departmentValue}       -- ← تم إضافة القسم
+      );
     `;
 
-    // ✅ إرسال رد النجاح
+    // رد النجاح
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -59,7 +83,8 @@ export async function handler(event) {
           role: role || "member",
           status: "active",
           phone,
-          job_title
+          job_title: type === "company" ? job_title : null,
+          department: departmentValue
         },
       }),
     };

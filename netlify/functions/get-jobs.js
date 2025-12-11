@@ -4,7 +4,6 @@ export async function handler(event) {
   try {
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
-    // 📌 قراءة الفلاتر (Query Parameters)
     const { 
       page = 1, 
       limit = 10,
@@ -16,7 +15,6 @@ export async function handler(event) {
 
     const offset = (page - 1) * limit;
 
-    // 🔍 بناء الاستعلام بشكل ديناميكي
     let query = `
       SELECT 
         id,
@@ -26,6 +24,10 @@ export async function handler(event) {
         job_type,
         location,
         salary_range,
+        department,
+        restrict_to_department,
+        interview_time,
+        application_deadline,
         created_at
       FROM jobs
       WHERE 1 = 1
@@ -55,7 +57,6 @@ export async function handler(event) {
 
     query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
-    // 🚀 تنفيذ الاستعلام
     const result = await sql(query, params);
 
     return {
