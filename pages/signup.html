@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-text="page_title">✳️ إنشاء مستخدم جديد - بوابة الوظائف</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -32,7 +31,7 @@
       color: #ffd369;
     }
 
-    /* زر اللغة — النسخة الاحترافية */
+    /* ✅ زر اللغة – حجم ثابت وصغير */
     .language-btn {
       cursor: pointer;
       background: rgba(255,255,255,0.2);
@@ -43,6 +42,8 @@
       font-size: 13px;
       font-weight: 600;
       transition: 0.3s ease;
+      width: auto;              /* أهم شيء: لا يكون 100% */
+      display: inline-block;    /* يخليه بحجم المحتوى فقط */
     }
 
     .language-btn:hover {
@@ -73,7 +74,8 @@
       margin-bottom: 15px;
     }
 
-    button {
+    /* هذا للزر داخل الكرت فقط (زر إنشاء المستخدم) */
+    .signup-card button {
       width: 100%;
       padding: 10px;
       background: linear-gradient(90deg, #007bff, #0056b3);
@@ -85,7 +87,7 @@
       transition: 0.2s ease;
     }
 
-    button:hover { transform: scale(1.03); }
+    .signup-card button:hover { transform: scale(1.03); }
 
     #alertBox {
       display: none;
@@ -222,11 +224,9 @@
         el.textContent = translations[currentLang][el.dataset.text];
       });
 
-      // تحديث النص داخل زر اللغة
       document.getElementById("langToggle").textContent =
         currentLang === "ar" ? "EN" : "AR";
 
-      // تحديث title
       document.title = translations[currentLang].page_title;
     };
   </script>
