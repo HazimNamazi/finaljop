@@ -130,7 +130,6 @@
       background: #005fcc;
     }
 
-    /* دعم LTR */
     html[dir="ltr"] nav ul {
       flex-direction: row-reverse;
     }
@@ -159,9 +158,7 @@
 </section>
 
 <script>
-/* ---------------------------
-     🌍 الترجمة AR / EN
---------------------------- */
+/* ========== 🌍 الترجمة AR/EN ========== */
 const translations = {
   ar: {
     page_title: "💼 الوظائف المتاحة",
@@ -195,6 +192,7 @@ let currentLang = "ar";
 
 document.getElementById("langToggle").onclick = () => {
   currentLang = currentLang === "ar" ? "en" : "ar";
+
   document.documentElement.lang = currentLang;
   document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
 
@@ -202,15 +200,18 @@ document.getElementById("langToggle").onclick = () => {
     el.textContent = translations[currentLang][el.dataset.text];
   });
 
+  document.title = translations[currentLang].page_title;
+
   document.getElementById("langToggle").textContent =
     currentLang === "ar" ? "EN" : "AR";
 
   renderMenu();
+
+  /* 🔥 أهم إصلاح: إعادة تحميل الوظائف */
+  fetchJobs();
 };
 
-/* ---------------------------
-     👤 القائمة العلوية
---------------------------- */
+/* ========== 👤 القائمة العليا ========== */
 const user = JSON.parse(localStorage.getItem("user"));
 const menu = document.getElementById("menu");
 
@@ -240,11 +241,10 @@ function logout() {
   location.href = "login.html";
 }
 
-/* ---------------------------
-     🔥 تحميل الوظائف
---------------------------- */
+/* ========== 🔥 تحميل الوظائف ========== */
 async function fetchJobs() {
   const jobsList = document.getElementById("jobsList");
+  jobsList.innerHTML = translations[currentLang].loading;
 
   try {
     const res = await fetch("/.netlify/functions/get-jobs");
@@ -257,8 +257,15 @@ async function fetchJobs() {
     }
 
     jobsList.innerHTML = jobs.map(job => {
-      const deadline = job.application_deadline ? new Date(job.application_deadline).toLocaleString("ar-SA") : "—";
-      const interview = job.interview_time ? new Date(job.interview_time).toLocaleString("ar-SA") : "—";
+      const locale = currentLang === "ar" ? "ar-SA" : "en-US";
+
+      const deadline = job.application_deadline
+        ? new Date(job.application_deadline).toLocaleString(locale)
+        : "—";
+
+      const interview = job.interview_time
+        ? new Date(job.interview_time).toLocaleString(locale)
+        : "—";
 
       let restriction = "";
       if (job.restrict_to_department && user?.department !== job.department) {
@@ -275,10 +282,10 @@ async function fetchJobs() {
           <div class="company-email">📧 ${job.company_email || "—"}</div>
           <div>🏢 ${job.company_name}</div>
           <div>📍 ${job.location || "—"}</div>
-          <div>📘 القسم: ${job.department || "عام"}</div>
-          <div>⏳ آخر موعد للتقديم: ${deadline}</div>
-          <div>🕒 وقت المقابلة: ${interview}</div>
-          <div>💰 الراتب: ${job.salary_range || "—"}</div>
+          <div>📘 القسم: ${job.department || (currentLang==="ar" ? "عام" : "General")}</div>
+          <div>⏳ ${deadline}</div>
+          <div>🕒 ${interview}</div>
+          <div>💰 ${job.salary_range || "—"}</div>
 
           ${restriction}
 
