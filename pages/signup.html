@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>✳️ إنشاء مستخدم جديد - بوابة الوظائف</title>
+  <title data-text="page_title">✳️ إنشاء مستخدم جديد - بوابة الوظائف</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -15,6 +16,7 @@
       color: #fff;
     }
 
+    /* ===== HEADER ===== */
     header {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
@@ -30,20 +32,25 @@
       color: #ffd369;
     }
 
+    /* زر اللغة — النسخة الاحترافية */
     .language-btn {
       cursor: pointer;
-      background: rgba(255,255,255,0.15);
-      border: none;
-      padding: 6px 14px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid #ffd369;
+      padding: 6px 18px;
       color: #ffd369;
-      border-radius: 20px;
-      font-size: 12px;
+      border-radius: 25px;
+      font-size: 13px;
       font-weight: 600;
-      transition: 0.2s ease;
+      transition: 0.3s ease;
     }
 
-    .language-btn:hover { background: rgba(255,255,255,0.3); }
+    .language-btn:hover {
+      background: #ffd369;
+      color: #001f3f;
+    }
 
+    /* ===== CARD ===== */
     .signup-card {
       background: rgba(255,255,255,0.12);
       padding: 35px;
@@ -126,6 +133,7 @@
       <label data-text="phone">رقم الجوال:</label>
       <input type="tel" id="phone" pattern="[0-9]{10}" required>
 
+      <!-- القسم للطلاب فقط -->
       <div id="departmentField">
         <label data-text="department">القسم:</label>
         <select id="department">
@@ -143,6 +151,7 @@
         <option value="company">شركة 🏢</option>
       </select>
 
+      <!-- حقل الشركة -->
       <div id="companyFields" style="display:none;">
         <label data-text="company_title">المسمى الوظيفي للشركة:</label>
         <input type="text" id="job_title" placeholder="مثال: HR Manager">
@@ -153,140 +162,140 @@
       <div id="alertBox"></div>
     </form>
 
-    <!-- 🔥 هذا السطر يصلح مشكلة الترجمة -->
     <p style="margin-top: 15px;">
       <span data-text="have_account">هل لديك حساب؟</span>
-      <a href="login.html" data-text="login">تسجيل الدخول</a>
+      <a href="login.html" data-text="login" style="color:#ffd369;">تسجيل الدخول</a>
     </p>
-
   </div>
 
   <footer data-text="footer">© 2025 بوابة الوظائف - جامعة جازان</footer>
 
-<!-- 🌍 الترجمة مع الإصلاح -->
-<script>
-const translations = {
-  ar: {
-    header_title: "💼 Career Building for JU Students",
-    title: "✳️ إنشاء مستخدم جديد",
-    subtitle: "أدخل بيانات المستخدم لإنشاء الحساب",
-    full_name: "الاسم الكامل:",
-    username: "اسم المستخدم:",
-    email: "البريد الإلكتروني:",
-    password: "كلمة المرور:",
-    phone: "رقم الجوال:",
-    department: "القسم:",
-    user_type: "نوع المستخدم:",
-    company_title: "المسمى الوظيفي للشركة:",
-    btn_create: "إنشاء المستخدم",
-    have_account: "هل لديك حساب؟",
-    login: "تسجيل الدخول",
-    footer: "© 2025 بوابة الوظائف - جامعة جازان"
-  },
-  en: {
-    header_title: "💼 Career Building for JU Students",
-    title: "✳️ Create New Account",
-    subtitle: "Enter user details to create an account",
-    full_name: "Full Name:",
-    username: "Username:",
-    email: "Email:",
-    password: "Password:",
-    phone: "Phone Number:",
-    department: "Department:",
-    user_type: "User Type:",
-    company_title: "Company Job Title:",
-    btn_create: "Create Account",
-    have_account: "Already have an account?",
-    login: "Login",
-    footer: "© 2025 Career Building for JU Students"
-  }
-};
+  <!-- 🌍 الترجمة AR/EN -->
+  <script>
+    const translations = {
+      ar: {
+        page_title: "✳️ إنشاء مستخدم جديد",
+        header_title: "💼 Career Building for JU Students",
+        title: "✳️ إنشاء مستخدم جديد",
+        subtitle: "أدخل بيانات المستخدم لإنشاء الحساب",
+        full_name: "الاسم الكامل:",
+        username: "اسم المستخدم:",
+        email: "البريد الإلكتروني:",
+        password: "كلمة المرور:",
+        phone: "رقم الجوال:",
+        department: "القسم:",
+        user_type: "نوع المستخدم:",
+        company_title: "المسمى الوظيفي للشركة:",
+        btn_create: "إنشاء المستخدم",
+        have_account: "هل لديك حساب؟",
+        login: "تسجيل الدخول",
+        footer: "© 2025 بوابة الوظائف - جامعة جازان"
+      },
+      en: {
+        page_title: "✳️ Create New Account",
+        header_title: "💼 Career Building for JU Students",
+        title: "✳️ Create New Account",
+        subtitle: "Enter user details to create an account",
+        full_name: "Full Name:",
+        username: "Username:",
+        email: "Email:",
+        password: "Password:",
+        phone: "Phone Number:",
+        department: "Department:",
+        user_type: "User Type:",
+        company_title: "Company Job Title:",
+        btn_create: "Create Account",
+        have_account: "Already have an account?",
+        login: "Login",
+        footer: "© 2025 Career Building for JU Students"
+      }
+    };
 
-let currentLang = "ar";
+    let currentLang = "ar";
 
-document.getElementById("langToggle").onclick = () => {
-  currentLang = currentLang === "ar" ? "en" : "ar";
+    document.getElementById("langToggle").onclick = () => {
+      currentLang = currentLang === "ar" ? "en" : "ar";
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
 
-  document.documentElement.lang = currentLang;
-  document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+      document.querySelectorAll("[data-text]").forEach(el => {
+        el.textContent = translations[currentLang][el.dataset.text];
+      });
 
-  document.querySelectorAll("[data-text]").forEach(el => {
-    const key = el.dataset.text;
+      // تحديث النص داخل زر اللغة
+      document.getElementById("langToggle").textContent =
+        currentLang === "ar" ? "EN" : "AR";
 
-    if (key === "have_account") {
-      el.textContent = translations[currentLang].have_account;
-    } else if (key === "login") {
-      el.textContent = translations[currentLang].login;
-    } else {
-      el.textContent = translations[currentLang][key];
-    }
-  });
+      // تحديث title
+      document.title = translations[currentLang].page_title;
+    };
+  </script>
 
-  document.getElementById("langToggle").textContent =
-    currentLang === "ar" ? "EN" : "AR";
-};
-</script>
+  <!-- منطق إظهار/إخفاء الحقول -->
+  <script>
+    const userTypeSelect = document.getElementById("user_type");
+    const companyFields = document.getElementById("companyFields");
+    const departmentField = document.getElementById("departmentField");
 
-<script>
-const userTypeSelect = document.getElementById("user_type");
-const companyFields = document.getElementById("companyFields");
-const departmentField = document.getElementById("departmentField");
-
-userTypeSelect.addEventListener("change", () => {
-  if (userTypeSelect.value === "company") {
-    companyFields.style.display = "block";
-    departmentField.style.display = "none";
-  } else {
-    companyFields.style.display = "none";
-    departmentField.style.display = "block";
-  }
-});
-</script>
-
-<script>
-document.getElementById("signupForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const body = {
-    full_name: document.getElementById("full_name").value,
-    username: document.getElementById("username").value,
-    email: document.getElementById("email").value,
-    password: document.getElementById("password").value,
-    phone: document.getElementById("phone").value,
-    department: document.getElementById("department").value,
-    user_type: document.getElementById("user_type").value,
-    job_title: document.getElementById("job_title").value
-  };
-
-  const alertBox = document.getElementById("alertBox");
-
-  try {
-    const res = await fetch("/.netlify/functions/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+    userTypeSelect.addEventListener("change", () => {
+      if (userTypeSelect.value === "company") {
+        companyFields.style.display = "block";
+        departmentField.style.display = "none";
+      } else {
+        companyFields.style.display = "none";
+        departmentField.style.display = "block";
+      }
     });
+  </script>
 
-    const data = await res.json();
+  <!-- إرسال بيانات التسجيل -->
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    alertBox.style.display = "block";
+      const body = {
+        full_name: document.getElementById("full_name").value,
+        username: document.getElementById("username").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        phone: document.getElementById("phone").value,
+        department: document.getElementById("department").value,
+        user_type: document.getElementById("user_type").value,
+        job_title: document.getElementById("job_title").value
+      };
 
-    if (res.status === 200) {
-      alertBox.style.background = "#28a745";
-      alertBox.textContent = "✔ تم إنشاء الحساب بنجاح!";
-      setTimeout(() => window.location.href = "login.html", 1500);
-    } else {
-      alertBox.style.background = "#dc3545";
-      alertBox.textContent = data.message || "خطأ أثناء إنشاء الحساب";
-    }
+      const alertBox = document.getElementById("alertBox");
 
-  } catch (err) {
-    alertBox.style.display = "block";
-    alertBox.style.background = "#dc3545";
-    alertBox.textContent = "❌ فشل الاتصال بالخادم";
-  }
-});
-</script>
+      try {
+        const res = await fetch("/.netlify/functions/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        alertBox.style.display = "block";
+
+        if (res.status === 200) {
+          alertBox.style.background = "#28a745";
+          alertBox.textContent = "✔ تم إنشاء الحساب بنجاح!";
+
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 1500);
+        } else {
+          alertBox.style.background = "#dc3545";
+          alertBox.textContent = data.message || "خطأ أثناء إنشاء الحساب";
+        }
+
+      } catch (err) {
+        alertBox.style.display = "block";
+        alertBox.style.background = "#dc3545";
+        alertBox.textContent = "❌ فشل الاتصال بالخادم";
+      }
+    });
+  </script>
 
 </body>
 </html>
