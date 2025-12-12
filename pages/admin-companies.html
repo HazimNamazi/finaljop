@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>🏢 إدارة الشركات</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
     body {
       margin: 0;
@@ -18,7 +19,6 @@
       justify-content: space-between;
       align-items: center;
     }
-    .navbar h2 { margin: 0; }
     .navbar a {
       color: #ffd369;
       text-decoration: none;
@@ -26,30 +26,34 @@
       font-weight: bold;
     }
     .navbar a:hover { color: #fff; }
+
     .logout-btn {
       background: #dc3545;
-      color: white;
+      color: #fff;
       padding: 8px 15px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
       font-weight: bold;
     }
+
     .container {
       padding: 30px;
       max-width: 1100px;
       margin: auto;
     }
+
     .box {
       background: white;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      margin-top: 15px;
     }
     th, td {
       padding: 10px;
@@ -60,17 +64,19 @@
       background: #00509d;
       color: #fff;
     }
+
     .btn-delete {
       background: #dc3545;
       color: white;
       padding: 6px 12px;
-      border:none;
+      border: none;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
     }
   </style>
 </head>
+
 <body>
 
 <div class="navbar">
@@ -93,16 +99,19 @@
 </div>
 
 <script>
+/* حماية الأدمن */
 const user = JSON.parse(localStorage.getItem("user"));
 if (!user || user.user_type !== "admin") {
-  alert("❌ غير مصرح بدخول هذه الصفحة");
-  window.location.href = "login.html";
-}
-function logout() {
-  localStorage.removeItem("user");
-  window.location.href = "login.html";
+  alert("❌ غير مصرح بالدخول");
+  location.href = "login.html";
 }
 
+function logout() {
+  localStorage.removeItem("user");
+  location.href = "login.html";
+}
+
+/* تحميل الشركات */
 async function loadCompanies() {
   const res = await fetch("/.netlify/functions/admin-get-companies");
   const companies = await res.json();
@@ -113,6 +122,7 @@ async function loadCompanies() {
       <th>البريد</th>
       <th>رقم الجوال</th>
       <th>تاريخ التسجيل</th>
+      <th>حذف</th>
     </tr>
   `;
 
@@ -123,10 +133,30 @@ async function loadCompanies() {
         <td>${c.email}</td>
         <td>${c.phone || "—"}</td>
         <td>${c.created_at || "—"}</td>
-      </tr>`;
+
+        <td>
+          <button class="btn-delete" onclick="deleteCompany(${c.id})">🗑 حذف</button>
+        </td>
+      </tr>
+    `;
   });
 
   document.getElementById("companiesTable").innerHTML = html;
+}
+
+/* حذف شركة */
+async function deleteCompany(id) {
+  if (!confirm("⚠️ سيتم حذف الشركة وجميع الوظائف الخاصة بها! هل أنت متأكد؟")) return;
+
+  const res = await fetch(`/.netlify/functions/admin-delete-company?id=${id}`);
+  const data = await res.json();
+
+  if (data.success) {
+    alert("✔ تم حذف الشركة");
+    loadCompanies();
+  } else {
+    alert("❌ خطأ: " + data.message);
+  }
 }
 
 loadCompanies();
