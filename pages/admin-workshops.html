@@ -120,7 +120,7 @@
     <textarea id="desc" placeholder="الوصف"></textarea>
     <input id="date" type="date">
     <input id="time" type="time">
-    <input id="location" placeholder="الموقع">
+    <input id="locationInput" placeholder="الموقع">
     <input id="link" placeholder="رابط الورشة (اختياري)">
     <button onclick="createWorkshop()">إنشاء الورشة</button>
   </div>
@@ -146,15 +146,23 @@ function logout() {
   window.location.href = "login.html";
 }
 
+/* ✅ الدالة المصححة */
 async function createWorkshop() {
+  const titleInput = document.getElementById("title");
+  const descInput = document.getElementById("desc");
+  const dateInput = document.getElementById("date");
+  const timeInput = document.getElementById("time");
+  const locationInput = document.getElementById("locationInput");
+  const linkInput = document.getElementById("link");
+
   const data = {
     admin_id,
-    title: title.value.trim(),
-    description: desc.value.trim(),
-    date: date.value,
-    time: time.value,
-    location: location.value.trim(),
-    link: link.value.trim()
+    title: titleInput.value.trim(),
+    description: descInput.value.trim(),
+    date: dateInput.value,
+    time: timeInput.value,
+    location: locationInput.value.trim(),
+    link: linkInput.value.trim()
   };
 
   if (!data.title || !data.date) {
@@ -174,12 +182,14 @@ async function createWorkshop() {
   }
 
   alert("✔️ تم إنشاء الورشة بنجاح");
-  title.value = "";
-  desc.value = "";
-  date.value = "";
-  time.value = "";
-  location.value = "";
-  link.value = "";
+
+  titleInput.value = "";
+  descInput.value = "";
+  dateInput.value = "";
+  timeInput.value = "";
+  locationInput.value = "";
+  linkInput.value = "";
+
   loadWorkshops();
 }
 

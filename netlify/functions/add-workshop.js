@@ -1,38 +1,33 @@
-async function createWorkshop() {
-  const locationInput = document.getElementById("location");
+import { neon } from "@neondatabase/serverless";
 
-  const data = {
-    admin_id,
-    title: title.value.trim(),
-    description: desc.value.trim(),
-    date: date.value,
-    time: time.value,
-    location: locationInput.value.trim(),
-    link: link.value.trim()
-  };
+export async function handler(event) {
+  try {
+    const sql = neon(process.env.NETLIFY_DATABASE_URL);
+    const body = JSON.parse(event.body);
 
-  if (!data.title || !data.date) {
-    alert("⚠️ عنوان الورشة والتاريخ مطلوبان");
-    return;
+    const { admin_id, title, description, date, time, location, link } = body;
+
+    if (!admin_id || !title || !date || !time) {
+      return { statusCode: 400, body: JSON.stringify({ message: "Missing fields" }) };
+    }
+
+    const checkUser = await sql`SELECT user_type FROM users WHERE id = ${admin_id}`;
+    if (checkUser.length === 0 || checkUser[0].user_type !== "admin") {
+      return { statusCode: 403, body: JSON.stringify({ message: "Only admin can create workshops" }) };
+    }
+
+    const result = await sql`
+      INSERT INTO workshops (admin_id, title, description, date, time, location, link)
+      VALUES (${admin_id}, ${title}, ${description}, ${date}, ${time}, ${location}, ${link})
+      RETURNING *;
+    `;
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, workshop: result[0] })
+    };
+
+  } catch (err) {
+    return { statusCode: 500, body: err.toString() };
   }
-
-  const res = await fetch("/.netlify/functions/add-workshop", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-
-  if (!res.ok) {
-    alert("❌ فشل إنشاء الورشة");
-    return;
-  }
-
-  alert("✔️ تم إنشاء الورشة بنجاح");
-  title.value = "";
-  desc.value = "";
-  date.value = "";
-  time.value = "";
-  locationInput.value = "";
-  link.value = "";
-  loadWorkshops();
 }
