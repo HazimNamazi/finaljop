@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <title>👥 طلاب الورشة</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
     body {
-      margin: 0;
-      font-family: 'Tajawal', sans-serif;
       background: #f4f6f9;
+      font-family: 'Tajawal', sans-serif;
+      margin: 0;
     }
+
     .navbar {
       background: #001f3f;
       color: #fff;
@@ -18,35 +20,56 @@
       justify-content: space-between;
       align-items: center;
     }
+
     .navbar a {
       color: #ffd369;
       text-decoration: none;
       font-weight: bold;
     }
+
     .container {
-      padding: 30px;
       max-width: 1000px;
-      margin: auto;
-    }
-    .box {
+      margin: 30px auto;
       background: white;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
     }
+
     th, td {
-      padding: 10px;
+      padding: 12px;
       border-bottom: 1px solid #ddd;
       text-align: center;
     }
+
     th {
       background: #00509d;
-      color: #fff;
+      color: white;
+    }
+
+    .btn-attend {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .attended {
+      color: green;
+      font-weight: bold;
+    }
+
+    .not-attended {
+      color: red;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -54,26 +77,27 @@
 <body>
 
 <div class="navbar">
-  <h3>👥 طلاب الورشة</h3>
   <a href="admin-workshops.html">⬅️ رجوع للورش</a>
+  <h3>👥 طلاب الورشة</h3>
 </div>
 
 <div class="container">
-  <div class="box">
-    <table id="studentsTable"></table>
-  </div>
+  <table id="studentsTable"></table>
 </div>
 
 <script>
+/* 🔐 حماية الأدمن */
 const admin = JSON.parse(localStorage.getItem("user"));
 if (!admin || admin.user_type !== "admin") {
-  alert("❌ غير مصرح");
+  alert("❌ غير مصرح بالدخول");
   location.href = "login.html";
 }
 
+/* 🆔 workshop_id من الرابط */
 const params = new URLSearchParams(window.location.search);
 const workshop_id = params.get("id");
 
+/* 📥 تحميل الطلاب */
 async function loadStudents() {
   const res = await fetch(`/.netlify/functions/get-workshop-students?workshop_id=${workshop_id}`);
   const students = await res.json();
@@ -83,24 +107,47 @@ async function loadStudents() {
       <th>الاسم</th>
       <th>البريد</th>
       <th>الحضور</th>
+      <th>تأكيد</th>
     </tr>
   `;
-
-  if (!students.length) {
-    html += `<tr><td colspan="3">لا يوجد طلاب</td></tr>`;
-  }
 
   students.forEach(s => {
     html += `
       <tr>
         <td>${s.full_name}</td>
         <td>${s.email}</td>
-        <td>${s.attended ? "✔️ حاضر" : "❌ غير حاضر"}</td>
+        <td class="${s.attended ? 'attended' : 'not-attended'}">
+          ${s.attended ? "✔️ حاضر" : "❌ غير حاضر"}
+        </td>
+        <td>
+          ${
+            s.attended
+              ? "—"
+              : `<button class="btn-attend" onclick="markAttendance(${s.student_id})">✔️ تسجيل حضور</button>`
+          }
+        </td>
       </tr>
     `;
   });
 
   document.getElementById("studentsTable").innerHTML = html;
+}
+
+/* ✅ تسجيل الحضور */
+async function markAttendance(student_id) {
+  const res = await fetch("/.netlify/functions/mark-attendance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ student_id, workshop_id })
+  });
+
+  if (!res.ok) {
+    alert("❌ فشل تسجيل الحضور");
+    return;
+  }
+
+  alert("✔️ تم تسجيل الحضور");
+  loadStudents();
 }
 
 loadStudents();
