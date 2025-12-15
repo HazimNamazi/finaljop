@@ -4,14 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-text="title">تواصل معنا</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     body {
       font-family: 'Tajawal', sans-serif;
       background: radial-gradient(circle at top right, #0a84ff, #001f3f 70%);
-      color: #fff; margin: 0; padding: 0;
+      color: #fff;
+      margin: 0;
     }
+
     header {
       background: rgba(255,255,255,0.1);
       backdrop-filter: blur(10px);
@@ -20,30 +23,35 @@
       justify-content: space-between;
       align-items: center;
     }
+
     .logo {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       color: #ffd369;
     }
+
+    /* ✅ زر اللغة صغير */
     .language-btn {
       cursor: pointer;
-      background: none;
+      background: rgba(255,255,255,0.15);
       border: 1px solid #ffd369;
-      padding: 6px 14px;
+      padding: 4px 10px;
       color: #ffd369;
-      border-radius: 8px;
+      border-radius: 14px;
+      font-size: 11px;
       font-weight: 600;
     }
+
     .contact-box {
-      max-width: 700px;
+      max-width: 650px;
       margin: 70px auto;
       background: rgba(255,255,255,0.12);
       padding: 30px;
       border-radius: 16px;
       backdrop-filter: blur(12px);
       text-align: center;
-      line-height: 1.8;
     }
+
     input, textarea {
       width: 100%;
       padding: 12px;
@@ -52,41 +60,43 @@
       margin-bottom: 15px;
       background: rgba(255,255,255,0.2);
       color: #fff;
-      font-family: Tajawal;
+      font-family: 'Tajawal';
     }
-    textarea { height: 140px; }
+
+    textarea { height: 130px; }
 
     button {
       background: linear-gradient(135deg, #007bff, #0056b3);
-      padding: 12px 20px;
+      padding: 12px;
       border-radius: 10px;
       color: white;
-      font-size: 16px;
+      font-size: 15px;
       border: none;
       cursor: pointer;
       width: 100%;
-      font-weight: bold;
+      font-weight: 700;
     }
-    button:hover { opacity: 0.9; }
-
-    .back-btn {
-      background: rgba(255,255,255,0.2);
-      color: #ffd369;
-      padding: 10px 20px;
-      border-radius: 10px;
-      border: 1px solid #ffd369;
-      cursor: pointer;
-      margin-top: 20px;
-      display: inline-block;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .back-btn:hover { background: #ffd369; color: #001f3f; transform: scale(1.05); }
 
     #msg {
-      margin-top: 15px;
+      margin-top: 12px;
       font-weight: bold;
       display: none;
+    }
+
+    .back-btn {
+      margin-top: 18px;
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid #ffd369;
+      color: #ffd369;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .back-btn:hover {
+      background: #ffd369;
+      color: #001f3f;
     }
   </style>
 </head>
@@ -100,13 +110,13 @@
 
 <div class="contact-box">
   <h2 data-text="heading">تواصل معنا</h2>
-  <p data-text="desc">يسعدنا تواصلك معنا! اترك رسالتك وسنقوم بالرد عليك في أقرب وقت.</p>
+  <p data-text="desc">يسعدنا تواصلك معنا، اترك رسالتك وسيتم الاطلاع عليها من قبل الإدارة.</p>
 
-  <!-- النموذج -->
+  <!-- ✅ الفورم -->
   <form id="contactForm">
-    <input type="text" id="name" data-placeholder="name_ph" placeholder="الاسم" required>
-    <input type="email" id="email" data-placeholder="email_ph" placeholder="البريد الإلكتروني" required>
-    <textarea id="message" data-placeholder="msg_ph" placeholder="رسالتك" required></textarea>
+    <input type="text" id="name" data-placeholder="name_ph" placeholder="الاسم">
+    <input type="email" id="email" data-placeholder="email_ph" placeholder="البريد الإلكتروني">
+    <textarea id="message" data-placeholder="msg_ph" placeholder="رسالتك"></textarea>
 
     <button type="submit" data-text="send_btn">إرسال الرسالة</button>
   </form>
@@ -117,37 +127,34 @@
 </div>
 
 <script>
-/* ========= الترجمة ========= */
+/* 🌍 الترجمة */
 const trans = {
   ar: {
     title: "تواصل معنا",
     header_title: "💼 Career Building for JU Students",
     heading: "تواصل معنا",
-    desc: "يسعدنا تواصلك معنا! اترك رسالتك وسنقوم بالرد عليك.",
+    desc: "يسعدنا تواصلك معنا، اترك رسالتك وسيتم الاطلاع عليها من قبل الإدارة.",
     name_ph: "الاسم",
     email_ph: "البريد الإلكتروني",
     msg_ph: "رسالتك",
     send_btn: "إرسال الرسالة",
-    back_btn: "⬅️ الرجوع إلى الوظائف",
-    success: "✅ تم إرسال رسالتك بنجاح",
-    error: "❌ حدث خطأ أثناء الإرسال"
+    back_btn: "⬅️ الرجوع إلى الوظائف"
   },
   en: {
     title: "Contact Us",
     header_title: "💼 Career Building for JU Students",
     heading: "Contact Us",
-    desc: "We are happy to hear from you! Leave your message and we'll reply soon.",
+    desc: "We are happy to hear from you. Your message will be reviewed by the admin.",
     name_ph: "Your Name",
     email_ph: "Email Address",
     msg_ph: "Your Message",
     send_btn: "Send Message",
-    back_btn: "⬅️ Back to Jobs",
-    success: "✅ Message sent successfully",
-    error: "❌ Failed to send message"
+    back_btn: "⬅️ Back to Jobs"
   }
 };
 
 let lang = "ar";
+
 document.getElementById("langToggle").onclick = () => {
   lang = lang === "ar" ? "en" : "ar";
   document.documentElement.lang = lang;
@@ -165,36 +172,40 @@ document.getElementById("langToggle").onclick = () => {
   document.getElementById("langToggle").textContent = lang === "ar" ? "EN" : "AR";
 };
 
-/* ========= إرسال الرسالة ========= */
+/* 📩 إرسال الرسالة */
 document.getElementById("contactForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const msgBox = document.getElementById("msg");
   msgBox.style.display = "block";
-  msgBox.textContent = "⏳ ...";
+
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const message = document.getElementById("message").value.trim();
+
+  if (!name || !email || !message) {
+    msgBox.textContent = "⚠️ الرجاء تعبئة جميع الحقول";
+    msgBox.style.color = "#ffd369";
+    return;
+  }
 
   try {
     const res = await fetch("/.netlify/functions/add-contact-message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: name.value,
-        email: email.value,
-        message: message.value
-      })
+      body: JSON.stringify({ name, email, message })
     });
 
     if (res.ok) {
-      msgBox.textContent = trans[lang].success;
+      msgBox.textContent = "✅ تم إرسال رسالتك بنجاح";
       msgBox.style.color = "#7CFC00";
       e.target.reset();
     } else {
-      msgBox.textContent = trans[lang].error;
+      msgBox.textContent = "❌ فشل إرسال الرسالة";
       msgBox.style.color = "#ff4f4f";
     }
-
   } catch {
-    msgBox.textContent = trans[lang].error;
+    msgBox.textContent = "❌ خطأ في الاتصال بالخادم";
     msgBox.style.color = "#ff4f4f";
   }
 });
