@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>👥 طلاب الورشة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Tajawal', sans-serif;
+      background: #f4f6f9;
+    }
+    .navbar {
+      background: #001f3f;
+      color: #fff;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar a {
+      color: #ffd369;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .container {
+      padding: 30px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #00509d;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <h3>👥 طلاب الورشة</h3>
+  <a href="admin-workshops.html">⬅️ رجوع للورش</a>
+</div>
+
+<div class="container">
+  <div class="box">
+    <table id="studentsTable"></table>
+  </div>
+</div>
+
+<script>
+const admin = JSON.parse(localStorage.getItem("user"));
+if (!admin || admin.user_type !== "admin") {
+  alert("❌ غير مصرح");
+  location.href = "login.html";
+}
+
+const params = new URLSearchParams(window.location.search);
+const workshop_id = params.get("id");
+
+async function loadStudents() {
+  const res = await fetch(`/.netlify/functions/get-workshop-students?workshop_id=${workshop_id}`);
+  const students = await res.json();
+
+  let html = `
+    <tr>
+      <th>الاسم</th>
+      <th>البريد</th>
+      <th>الحضور</th>
+    </tr>
+  `;
+
+  if (!students.length) {
+    html += `<tr><td colspan="3">لا يوجد طلاب</td></tr>`;
+  }
+
+  students.forEach(s => {
+    html += `
+      <tr>
+        <td>${s.full_name}</td>
+        <td>${s.email}</td>
+        <td>${s.attended ? "✔️ حاضر" : "❌ غير حاضر"}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("studentsTable").innerHTML = html;
+}
+
+loadStudents();
+</script>
+
+</body>
+</html>
