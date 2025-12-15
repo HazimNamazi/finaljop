@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>📩 رسائل تواصل معنا</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:Tajawal; background:#f4f6f9; padding:30px; }
+    table { width:100%; background:#fff; border-collapse:collapse; }
+    th, td { padding:12px; border-bottom:1px solid #ddd; text-align:center; }
+    th { background:#001f3f; color:#fff; }
+  </style>
+</head>
+<body>
+
+<h2>📩 رسائل تواصل معنا</h2>
+
+<table id="messagesTable"></table>
+
+<script>
+const admin = JSON.parse(localStorage.getItem("user"));
+if (!admin || admin.user_type !== "admin") {
+  alert("❌ غير مصرح");
+  location.href = "login.html";
+}
+
+async function loadMessages() {
+  const res = await fetch("/.netlify/functions/get-contact-messages");
+  const messages = await res.json();
+
+  let html = `
+    <tr>
+      <th>الاسم</th>
+      <th>البريد</th>
+      <th>الرسالة</th>
+      <th>التاريخ</th>
+    </tr>
+  `;
+
+  messages.forEach(m => {
+    html += `
+      <tr>
+        <td>${m.name}</td>
+        <td>${m.email}</td>
+        <td>${m.message}</td>
+        <td>${new Date(m.created_at).toLocaleString("ar-SA")}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("messagesTable").innerHTML = html;
+}
+
+loadMessages();
+</script>
+
+</body>
+</html>
